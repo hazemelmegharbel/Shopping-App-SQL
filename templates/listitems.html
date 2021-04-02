@@ -5,9 +5,20 @@
 
     <ul class="list-group d-flex align-items-center">
          {% for items in list %}
-      <li class="w-25 list-group-item"><pre>Item: {{items[0]}}
-Quantity: {{items[1]}}</pre></li>
+        <li class="w-25 list-group-item" id="{{items[0]}}"><pre>Item:</pre><input value="{{items[0]}}">
+            <pre>Quantity:</pre><input value="{{items[1]}}"><button onclick="hideElement()">x</button></li>
         {% endfor %}
     </ul>
 
+<script>
+function hideElement(){
+    var x = document.getElementById("count[0]")
+    if(x.style.display ==="none"){
+        x.style.display = "block";
+    }
+    else{
+        x.style.display = "none";
+    }
+}
+</script>
 {% endblock %}
