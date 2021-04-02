@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block list %}
+    <!-- Posts are created using a for loop iterating over the posts variable
+    in flaskblog.py -->
+
+    <ul class="list-group d-flex align-items-center">
+    {% for lists in lists %}
+        <li class="w-25 list-group-item">
+            <pre>
+                <form action="" method="post"><button name="listButton" value={{lists[2]}}>{{lists[0]}}{{lists[1]}}</button></form>
+            </pre>
+        </li>
+    {% endfor %}
+    </ul>
+
+{% endblock %}

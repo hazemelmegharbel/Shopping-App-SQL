@@ -1,0 +1,8 @@
+.list_name{
+    position: absolute;
+    left: 10px;
+    top:20px;
+}
+.list-group-item{
+    color: #8FBC8F !important;
+}

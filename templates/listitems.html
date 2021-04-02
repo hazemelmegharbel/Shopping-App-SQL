@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block listitems %}
+    <!-- Posts are created using a for loop iterating over the posts variable
+    in flaskblog.py -->
+
+    <ul class="list-group d-flex align-items-center">
+         {% for items in list %}
+      <li class="w-25 list-group-item"><pre>Item: {{items[0]}}
+Quantity: {{items[1]}}</pre></li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}
