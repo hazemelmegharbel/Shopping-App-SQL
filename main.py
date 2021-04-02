@@ -1,14 +1,17 @@
-from flask import Flask, request
+from flask import Flask, request, session, url_for
 from flask import render_template
 
 from flask_mysqldb import MySQL
+from werkzeug.utils import redirect
 
 app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'Root_default1996'
 app.config['MYSQL_DB'] = 'ShoppingApplication'
+app.config['SECRET_KEY'] = 'KECRET_SEY'
 
+session = {}
 mysql = MySQL(app)
 
 custID = '100000001'
@@ -74,22 +77,28 @@ def list():
         return render_template('viewlists.html', lists=results2)
     elif request.method == "POST":
         data = request.form.get('listButton')
+        session['index'] = data
         print(data)
+        return redirect(url_for('items'))
     return render_template('viewLists.html')
 
 
-@app.route("/items/", methods=['GET', 'POST'])
+@app.route("/list/items", methods=['GET', 'POST'])
 def items():
     if request.method == "GET":
+        sessionVar = session.get('index', None)
+        print(sessionVar)
         cur = mysql.connection.cursor()
         query = f"SELECT L.ItemName, L.Quantity " \
                 f"FROM ListItem L " \
-                f"WHERE customerID = '{custID}' AND listNumber = '{listNumber}'"
+                f"WHERE customerID = '{custID}' AND listNumber = '{sessionVar}'"
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
         cur.close()
         return render_template('listitems.html', list=results)
+    else:
+        return render_template('listitems.html')
 
 
 if __name__ == '__main__':
