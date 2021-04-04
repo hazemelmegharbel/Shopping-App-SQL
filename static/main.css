@@ -1,8 +1,25 @@
 .list_name{
     position: absolute;
     left: 10px;
-    top:20px;
+    top: 20px;
 }
-.list-group-item{
-    color: #8FBC8F !important;
+
+.top_right{
+    position: absolute;
+    top: 20px;
+    right: 10px;
 }
+
+.blueItems{
+    background-color: #E0FFFF;
+    color: #E0FFFF;
+}
+
+.list-group{
+    max-height: 600px;
+    margin-bottom: 10px;
+    overflow:scroll;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
