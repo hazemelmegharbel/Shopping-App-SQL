@@ -3,11 +3,22 @@
     <!-- Posts are created using a for loop iterating over the posts variable
     in flaskblog.py -->
 
-    <ul class="list-group d-flex align-items-center">
-         {% for items in list %}
-      <li class="w-25 list-group-item"><pre>Item: {{items[0]}}
-Quantity: {{items[1]}}</pre></li>
-        {% endfor %}
-    </ul>
+    <div>
+        <h3>
+            List Name Here:
+        </h3>
+
+        <ul class="list-group d-flex align-items-center">
+             {% for items in list %}
+            <li class="w-25 list-group-item blueItems" id="{{items[0]}}">
+                <button class="btn pull-right top_right" data-toggle="collapse" data-target="#{{items[0]}}" onclick="hideElement()">x</button>
+                <pre>Item:</pre>
+                <form action="" method="post"><input value="{{items[0]}}"></form>
+                <pre>Quantity:</pre>
+                <form action="" method="post"><input value="{{items[1]}}"></form>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 
 {% endblock %}

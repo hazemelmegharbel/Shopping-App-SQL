@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request, session, url_for
 from flask import render_template
 
@@ -81,6 +83,14 @@ def list():
         print(data)
         return redirect(url_for('items'))
     return render_template('viewLists.html')
+
+
+@app.route("/create/", methods=['GET', 'POST'])
+def create():
+    if request.method == "POST":
+        data = request.form.get('nameID')
+        print(data)
+    return render_template('createlist.html')
 
 
 @app.route("/list/items", methods=['GET', 'POST'])
