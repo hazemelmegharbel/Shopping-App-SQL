@@ -67,6 +67,14 @@ def home():
     return render_template('home.html')
 
 
+@app.route("/group/", methods=['GET', 'POST'])
+def group():
+    if request.method == "POST":
+        data = request.form.get('nameID')
+        print(data)
+    return render_template('groups.html')
+
+
 @app.route("/list/", methods=['GET', 'POST'])
 def list():
     if request.method == "GET":
@@ -74,13 +82,14 @@ def list():
         query = f"SELECT Name, CreationDate, listNumber FROM CustomerList WHERE CustomerID = '{custID}'"
         cur.execute(query)
         mysql.connection.commit()
-        results2 = cur.fetchall()
+        results = cur.fetchall()
         cur.close()
-        return render_template('viewlists.html', lists=results2)
+        return render_template('viewlists.html', lists=results)
     elif request.method == "POST":
         data = request.form.get('listButton')
-        session['index'] = data
-        print(data)
+        parsed = data.split()
+        session['index'] = parsed[0]
+        session['name'] = parsed[1]
         return redirect(url_for('items'))
     return render_template('viewLists.html')
 
@@ -96,17 +105,18 @@ def create():
 @app.route("/list/items", methods=['GET', 'POST'])
 def items():
     if request.method == "GET":
-        sessionVar = session.get('index', None)
-        print(sessionVar)
+        index = session.get('index', None)
+        name = session.get('name', None)
+        print(index)
         cur = mysql.connection.cursor()
         query = f"SELECT L.ItemName, L.Quantity " \
                 f"FROM ListItem L " \
-                f"WHERE customerID = '{custID}' AND listNumber = '{sessionVar}'"
+                f"WHERE customerID = '{custID}' AND listNumber = '{index}'"
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
         cur.close()
-        return render_template('listitems.html', list=results)
+        return render_template('listitems.html', list=results, Name=name)
     else:
         return render_template('listitems.html')
 
