@@ -9,8 +9,8 @@ class Database():
     def createConnection(self):
         config = {
             'user': 'root',  # default user for MySQL
-            'password': 'Root_default1996',  # whatever password you set
-            'host': 'localhost',
+            'password': '',  # whatever password you set
+            'host': 'localhost', 
             'database': 'ShoppingApplication',
             'port': '3306',
             'raise_on_warnings': True,
@@ -41,12 +41,12 @@ class Database():
         c.close()
         conn.close()
 
-    def insertCustomer(self, userID, FirstName, LastName, CustomerRating):
+    def insertCustomer(self, userID, FirstName, LastName):
         conn = self.createConnection(self)
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`Customer` " \
-                f"(`userID`, `FirstName`, `LastName`, `CustomerRating`) " \
-                f"VALUES ('{userID}', '{FirstName}', '{LastName}', '{CustomerRating}')"
+                f"(`userID`, `FirstName`, `LastName`) " \
+                f"VALUES ('{userID}', '{FirstName}', '{LastName}')"
         c.execute(query)
         conn.commit()
         c.close()
@@ -85,12 +85,12 @@ class Database():
         c.close()
         conn.close()
 
-    def insertCustomerList(self, ListNumber, CreationDate, CustomerID):
+    def insertCustomerList(self, ListNumber, Name, CreationDate, CustomerID):
         conn = self.createConnection(self)
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`CustomerList` " \
-                f"(`ListNumber`, `CreationDate`, `CustomerID`) " \
-                f"VALUES ('{ListNumber}', '{CreationDate}', '{CustomerID}')"
+                f"(`ListNumber`, `Name`, `CreationDate`, `CustomerID`) " \
+                f"VALUES ('{ListNumber}', '{Name}', '{CreationDate}', '{CustomerID}')"
         c.execute(query)
         conn.commit()
         c.close()
@@ -107,12 +107,12 @@ class Database():
         c.close()
         conn.close()
 
-    def insertParty(self, groupID, groupName, creatorID, numberOfMembers, shoppingDate):
+    def insertParty(self, groupID, groupName, creatorID, shoppingDate):
         conn = self.createConnection(self)
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`Party` " \
-                f"(`groupID`, `groupName`, `creatorID`,  `numberOfMembers`, `shoppingDate`) " \
-                f"VALUES ('{groupID}', '{groupName}', '{creatorID}', '{numberOfMembers}', '{shoppingDate}')"
+                f"(`groupID`, `groupName`, `creatorID`,  `shoppingDate`) " \
+                f"VALUES ('{groupID}', '{groupName}', '{creatorID}', '{shoppingDate}')"
         c.execute(query)
         conn.commit()
         c.close()
@@ -129,38 +129,6 @@ class Database():
         c.close()
         conn.close()
 
-    def insertCreatesGroup(self, customerID, groupID):
-        conn = self.createConnection(self)
-        c = conn.cursor()
-        query = f"INSERT INTO `ShoppingApplication`.`CreatesGroup` " \
-                f"(`customerID`, `groupID`) " \
-                f"VALUES ('{customerID}', '{groupID}')"
-        c.execute(query)
-        conn.commit()
-        c.close()
-        conn.close()
-
-    def insertViewsGroup(self, customerID, groupID):
-        conn = self.createConnection(self)
-        c = conn.cursor()
-        query = f"INSERT INTO `ShoppingApplication`.`ViewsGroup` " \
-                f"(`customerID`, `groupID`) " \
-                f"VALUES ('{customerID}', '{groupID}')"
-        c.execute(query)
-        conn.commit()
-        c.close()
-        conn.close()
-
-    def insertJoinsGroup(self, customerID, groupID):
-        conn = self.createConnection(self)
-        c = conn.cursor()
-        query = f"INSERT INTO `ShoppingApplication`.`JoinsGroup` " \
-                f"(`customerID`, `groupID`) " \
-                f"VALUES ('{customerID}', '{groupID}')"
-        c.execute(query)
-        conn.commit()
-        c.close()
-        conn.close()
 
     def insertSaleShownToGroup(self, groupID, saleItem, groceryID):
         conn = self.createConnection(self)
