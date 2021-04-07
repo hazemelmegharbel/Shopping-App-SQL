@@ -5,13 +5,13 @@
 
     <div>
         <h3>
-            List Name Here:
+            {{Name}}
         </h3>
 
-        <ul class="list-group d-flex align-items-center">
+        <ul class="list-group d-flex align-items-center" id="listItems">
              {% for items in list %}
             <li class="w-25 list-group-item blueItems" id="{{items[0]}}">
-                <button class="btn pull-right top_right" data-toggle="collapse" data-target="#{{items[0]}}" onclick="hideElement()">x</button>
+                <button class="btn pull-right top_right" onclick=hideElement("{{items[0]}}")>x</button>
                 <pre>Item:</pre>
                 <form action="" method="post"><input value="{{items[0]}}"></form>
                 <pre>Quantity:</pre>
@@ -21,4 +21,10 @@
         </ul>
     </div>
 
+<script>
+    function hideElement(index){
+        var item = document.getElementById(index);
+        item.parentNode.removeChild(item);
+    }
+</script>
 {% endblock %}
