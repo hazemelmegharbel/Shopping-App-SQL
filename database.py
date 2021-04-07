@@ -85,12 +85,12 @@ class Database():
         c.close()
         conn.close()
 
-    def insertCustomerList(self, ListNumber, CreationDate, CustomerID):
+    def insertCustomerList(self, ListNumber, Name, CreationDate, CustomerID):
         conn = self.createConnection(self)
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`CustomerList` " \
-                f"(`ListNumber`, `CreationDate`, `CustomerID`) " \
-                f"VALUES ('{ListNumber}', '{CreationDate}', '{CustomerID}')"
+                f"(`ListNumber`, `Name`, `CreationDate`, `CustomerID`) " \
+                f"VALUES ('{ListNumber}', '{Name}','{CreationDate}', '{CustomerID}')"
         c.execute(query)
         conn.commit()
         c.close()
@@ -124,39 +124,6 @@ class Database():
         query = f"INSERT INTO `ShoppingApplication`.`GroupMembers` " \
                 f"(`groupID`, `memberID`) " \
                 f"VALUES ('{groupID}', '{memberID}')"
-        c.execute(query)
-        conn.commit()
-        c.close()
-        conn.close()
-
-    def insertCreatesGroup(self, customerID, groupID):
-        conn = self.createConnection(self)
-        c = conn.cursor()
-        query = f"INSERT INTO `ShoppingApplication`.`CreatesGroup` " \
-                f"(`customerID`, `groupID`) " \
-                f"VALUES ('{customerID}', '{groupID}')"
-        c.execute(query)
-        conn.commit()
-        c.close()
-        conn.close()
-
-    def insertViewsGroup(self, customerID, groupID):
-        conn = self.createConnection(self)
-        c = conn.cursor()
-        query = f"INSERT INTO `ShoppingApplication`.`ViewsGroup` " \
-                f"(`customerID`, `groupID`) " \
-                f"VALUES ('{customerID}', '{groupID}')"
-        c.execute(query)
-        conn.commit()
-        c.close()
-        conn.close()
-
-    def insertJoinsGroup(self, customerID, groupID):
-        conn = self.createConnection(self)
-        c = conn.cursor()
-        query = f"INSERT INTO `ShoppingApplication`.`JoinsGroup` " \
-                f"(`customerID`, `groupID`) " \
-                f"VALUES ('{customerID}', '{groupID}')"
         c.execute(query)
         conn.commit()
         c.close()

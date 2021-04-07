@@ -62,8 +62,7 @@ CREATE TABLE `ShoppingApplication`.`ListItem`(
 `ListNumber` INT NOT NULL,
 `CustomerID` INT NOT NULL,
 `Quantity` INT,
-FOREIGN KEY (`ListNumber`) REFERENCES CustomerList(`ListNumber`),
-FOREIGN KEY (`CustomerID`) REFERENCES CustomerList(`CustomerID`),
+FOREIGN KEY (`ListNumber`, `CustomerID`) REFERENCES CustomerList(`ListNumber`, `CustomerID`),
 PRIMARY KEY (`ItemName`, `ListNumber`, `CustomerID`));
 
 CREATE TABLE `ShoppingApplication`.`Party`(
@@ -84,21 +83,13 @@ FOREIGN KEY (`memberID`) REFERENCES Customer(`UserID`),
 PRIMARY KEY (`groupID`, `memberID`)
 );
 
-CREATE TABLE `ShoppingApplication`.`CreatesGroup`(
-`customerID` INT NOT NULL,
-`groupID` INT NOT NULL,
-FOREIGN KEY (`customerID`) REFERENCES Customer(`userID`),
-FOREIGN KEY (`groupID`) REFERENCES Party (`groupID`),
-PRIMARY KEY (`customerID`, `groupID`)
-);
-
 CREATE TABLE `ShoppingApplication`.`SaleShownToGroup`(
 `groupID` INT NOT NULL,
 `saleItem` VARCHAR(45) NOT NULL,
 `groceryID` INT NOT NULL,
 FOREIGN KEY (`groupID`) REFERENCES Party (`groupID`),
 FOREIGN KEY (`saleItem`, `groceryID`) REFERENCES SalePromotion (`saleItem`, `groceryID`),
-PRIMARY KEY (`groupID`)
+PRIMARY KEY (`groupID`, `saleItem`, `groceryID`)
 );
 
 
