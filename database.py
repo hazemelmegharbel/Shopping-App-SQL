@@ -9,8 +9,8 @@ class Database():
     def createConnection(self):
         config = {
             'user': 'root',  # default user for MySQL
-            'password': '',  # whatever password you set
-            'host': 'localhost', 
+            'password': 'Root_default1996',  # whatever password you set
+            'host': 'localhost',
             'database': 'ShoppingApplication',
             'port': '3306',
             'raise_on_warnings': True,
@@ -41,12 +41,12 @@ class Database():
         c.close()
         conn.close()
 
-    def insertCustomer(self, userID, FirstName, LastName):
+    def insertCustomer(self, userID, FirstName, LastName, CustomerRating):
         conn = self.createConnection(self)
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`Customer` " \
-                f"(`userID`, `FirstName`, `LastName`) " \
-                f"VALUES ('{userID}', '{FirstName}', '{LastName}')"
+                f"(`userID`, `FirstName`, `LastName`, `CustomerRating`) " \
+                f"VALUES ('{userID}', '{FirstName}', '{LastName}', '{CustomerRating}')"
         c.execute(query)
         conn.commit()
         c.close()
@@ -90,7 +90,7 @@ class Database():
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`CustomerList` " \
                 f"(`ListNumber`, `Name`, `CreationDate`, `CustomerID`) " \
-                f"VALUES ('{ListNumber}', '{Name}', '{CreationDate}', '{CustomerID}')"
+                f"VALUES ('{ListNumber}', '{Name}','{CreationDate}', '{CustomerID}')"
         c.execute(query)
         conn.commit()
         c.close()
@@ -107,12 +107,12 @@ class Database():
         c.close()
         conn.close()
 
-    def insertParty(self, groupID, groupName, creatorID, shoppingDate):
+    def insertParty(self, groupID, groupName, creatorID, numberOfMembers, shoppingDate):
         conn = self.createConnection(self)
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`Party` " \
-                f"(`groupID`, `groupName`, `creatorID`,  `shoppingDate`) " \
-                f"VALUES ('{groupID}', '{groupName}', '{creatorID}', '{shoppingDate}')"
+                f"(`groupID`, `groupName`, `creatorID`,  `numberOfMembers`, `shoppingDate`) " \
+                f"VALUES ('{groupID}', '{groupName}', '{creatorID}', '{numberOfMembers}', '{shoppingDate}')"
         c.execute(query)
         conn.commit()
         c.close()
@@ -128,7 +128,6 @@ class Database():
         conn.commit()
         c.close()
         conn.close()
-
 
     def insertSaleShownToGroup(self, groupID, saleItem, groceryID):
         conn = self.createConnection(self)

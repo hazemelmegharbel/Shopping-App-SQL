@@ -25,6 +25,7 @@ CREATE TABLE `ShoppingApplication`.`Customer`(
 `UserID` INT NOT NULL,
 `FirstName` VARCHAR(45),
 `LastName` VARCHAR(45),
+`CustomerRating` INT,
 FOREIGN KEY (`UserID`) REFERENCES User(`UserID`),
 PRIMARY KEY (`UserID`));
 
@@ -68,6 +69,7 @@ CREATE TABLE `ShoppingApplication`.`Party`(
 `groupID` INT NOT NULL CHECK (`groupID` BETWEEN 1000000 AND 9999999),
 `creatorID` INT NOT NULL CHECK (`creatorID` BETWEEN 100000000 AND 999999999),
 `groupName` VARCHAR(45),
+`numberOfMembers` INT,
 `shoppingDate` DATE,
 FOREIGN KEY (`creatorID`) REFERENCES Customer(`UserID`),
 PRIMARY KEY (`groupID`)
