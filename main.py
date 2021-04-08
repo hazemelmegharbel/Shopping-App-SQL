@@ -67,12 +67,38 @@ def home():
     return render_template('home.html')
 
 
-@app.route("/group/", methods=['GET', 'POST'])
-def group():
-    if request.method == "POST":
-        data = request.form.get('nameID')
+@app.route("/groups/", methods=['GET', 'POST'])
+def groups():
+    if request.method == "GET":
+        cur = mysql.connection.cursor()
+        query = f"SELECT P.groupName, G.groupID, AVG(CustomerRating)" \
+                f" FROM Customer C, GroupMembers G" \
+                f" INNER JOIN Party P ON P.groupID = G.groupID" \
+                f" WHERE C.UserID=G.memberID " \
+                f"GROUP BY G.groupID"
+        cur.execute(query)
+        mysql.connection.commit()
+        results = cur.fetchall()
+        cur.close()
+        print(results)
+        return render_template('groups.html', lists=results)
+    elif request.method == "POST":
+        data = request.form.get('listButton')
+        session['groupID'] = data
         print(data)
+        return redirect(url_for('group'))
     return render_template('groups.html')
+
+
+@app.route("/groups/group", methods=['GET', 'POST'])
+def group():
+    if request.method == "GET":
+        pass
+        # DISPLAY THE GROUP LIST
+    elif request.method == "POST":
+        # RUN THE JOIN GROUP ONCLICK
+        pass
+    return render_template('group.html')
 
 
 @app.route("/list/", methods=['GET', 'POST'])

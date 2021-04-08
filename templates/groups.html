@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block create %}
+{% block groups %}
     <!-- Posts are created using a for loop iterating over the posts variable
     in flaskblog.py -->
 
@@ -10,9 +10,10 @@
 
     <ul class="list-group d-flex align-items-center">
     {% for lists in lists %}
-        <li class="w-25 list-group-item blueItems">
+        <li class="groupList w-25 list-group-item blueItems">
             <pre>
-                <form action="" method="post"><button name="listButton" value={{lists[2]}}>{{lists[0]}}{{lists[1]}}</button></form>
+                <div class="listButtonInfo"><h6>Group Name: {{lists[0]}}</h6><h6>Average member rating: {{lists[2]}}</h6></div>
+                <form action="" method="post"><button class="listButton" name="listButton" value={{lists[1]}}>View Group</button></form>
             </pre>
         </li>
     {% endfor %}
