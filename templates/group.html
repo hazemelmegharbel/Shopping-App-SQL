@@ -1,24 +1,24 @@
 {% extends "layout.html" %}
-{% block list %}
+
+{% block group %}
     <!-- Posts are created using a for loop iterating over the posts variable
     in flaskblog.py -->
 
     <h3>
-            Lists:
+            Specific Group page:
     </h3>
 
-
     <ul class="list-group d-flex align-items-center">
-    {% for lists in lists %}
+    {% for lists in list %}
         <li class="groupList w-25 list-group-item blueItems">
             <pre>
-                <form action="" method="post"><button name="listButton" value="{{lists[2]}} {{lists[0]}}">{{lists[0]}}{{lists[1]}}</button></form>
-
+                <div class="GroupListInfo"><h6>Item: {{lists[0]}}</h6><h6>Quantity: {{lists[1]}}</h6></div>
             </pre>
         </li>
     {% endfor %}
     </ul>
 
+    <form action="" method="post"><button>Join Group</button></form>
 
 
 {% endblock %}

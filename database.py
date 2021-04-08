@@ -118,12 +118,12 @@ class Database():
         c.close()
         conn.close()
 
-    def insertGroupMembers(self, groupID, memberID):
+    def insertGroupMembers(self, groupID, memberID, usesList):
         conn = self.createConnection(self)
         c = conn.cursor()
         query = f"INSERT INTO `ShoppingApplication`.`GroupMembers` " \
-                f"(`groupID`, `memberID`) " \
-                f"VALUES ('{groupID}', '{memberID}')"
+                f"(`groupID`, `memberID`, `UsesList`) " \
+                f"VALUES ('{groupID}', '{memberID}', '{usesList}')"
         c.execute(query)
         conn.commit()
         c.close()

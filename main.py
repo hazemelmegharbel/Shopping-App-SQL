@@ -19,60 +19,67 @@ mysql = MySQL(app)
 custID = '100000001'
 listNumber = '1'
 
-'''
-    def insertCustomerList(self, ListNumber, Name, CreationDate, CustomerID):
-        conn = self.createConnection(self)
-        c = conn.cursor()
-        query = f"INSERT INTO `ShoppingApplication`.`CustomerList` " \
-                f"(`ListNumber`, `Name`, `CreationDate`, `CustomerID`) " \
-                f"VALUES ('{ListNumber}', '{Name}','{CreationDate}', '{CustomerID}')"
-        c.execute(query)
-        conn.commit()
-        c.close()
-        conn.close()
-        
-        
-            elif request.method == "GET" and listNumber is not None:
-        cur = mysql.connection.cursor()
-        query = f"SELECT L.ItemName, L.Quantity " \
-                f"FROM ListItem L " \
-                f"WHERE customerID = '{custID}' AND listNumber = '{listNumber}'"
-        cur.execute(query)
-        mysql.connection.commit()
-        results = cur.fetchall()
-        cur.close()
-        return render_template('viewlists.html', name=results)
-
-'''
-
-'''
-       cur = mysql.connection.cursor()
-       query2 = f"SELECT Name " \
-               f"FROM CustomerList " \
-               f"WHERE customerID = '{custID}' AND listNumber = '{listNumber}'"
-       cur.execute(query2)
-       mysql.connection.commit()
-       results2 = cur.fetchall()
-       cur.close()
-       '''
-
-
-'''
-    query = f"SELECT Name, CreationDate FROM CustomerList WHERE CustomerID = '{custID}'"
-'''
-
 
 @app.route("/")
 def home():
     return render_template('home.html')
 
 
-@app.route("/group/", methods=['GET', 'POST'])
-def group():
-    if request.method == "POST":
-        data = request.form.get('nameID')
+@app.route("/groups/", methods=['GET', 'POST'])
+def groups():
+    if request.method == "GET":
+        cur = mysql.connection.cursor()
+        query = f"SELECT P.groupName, G.groupID, AVG(CustomerRating)" \
+                f" FROM Customer C, GroupMembers G" \
+                f" INNER JOIN Party P ON P.groupID = G.groupID" \
+                f" WHERE C.UserID=G.memberID " \
+                f"GROUP BY G.groupID"
+        cur.execute(query)
+        mysql.connection.commit()
+        results = cur.fetchall()
+        cur.close()
+        print(results)
+        return render_template('groups.html', lists=results)
+    elif request.method == "POST":
+        data = request.form.get('listButton')
+        session['groupID'] = data
         print(data)
+        return redirect(url_for('group'))
     return render_template('groups.html')
+
+
+@app.route("/groups/group", methods=['GET', 'POST'])
+def group():
+    if request.method == "GET":
+        identifier = session.get('groupID', None)
+        cur = mysql.connection.cursor()
+
+        query = f"SELECT L.ItemName, SUM(L.Quantity) " \
+                f"FROM ListItem L " \
+                f"WHERE CustomerID IN " \
+                f"(SELECT memberID FROM GroupMembers " \
+                f"WHERE L.CustomerID = memberID AND L.ListNumber = UsesList AND GroupID = {identifier})" \
+                f"GROUP BY L.ItemName;"
+
+        cur.execute(query)
+        mysql.connection.commit()
+        results = cur.fetchall()
+        cur.close()
+        return render_template('group.html', list=results)
+        # DISPLAY THE GROUP LIST
+    elif request.method == "POST":
+        # RUN THE JOIN GROUP ONCLICK
+        cur = mysql.connection.cursor()
+        identifier = session.get('groupID', None)
+        query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) VALUES({identifier}, {custID}, {listNumber});"
+        cur.execute(query)
+        mysql.connection.commit()
+        query = f"UPDATE Party SET numberOfMembers= numberOfMembers+1 WHERE groupID={identifier};"
+        cur.execute(query)
+        mysql.connection.commit()
+        cur.close()
+        render_template('group.html' )
+    return render_template('group.html')
 
 
 @app.route("/list/", methods=['GET', 'POST'])

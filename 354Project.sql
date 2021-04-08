@@ -78,8 +78,10 @@ PRIMARY KEY (`groupID`)
 CREATE TABLE `ShoppingApplication`.`GroupMembers`(
 `groupID` INT NOT NULL,
 `memberID` INT NOT NULL,
+`UsesList` INT NOT NULL,
 FOREIGN KEY (`groupID`) REFERENCES Party (`groupID`),
 FOREIGN KEY (`memberID`) REFERENCES Customer(`UserID`),
+FOREIGN KEY (`UsesList`, `memberID`) REFERENCES CustomerList(`ListNumber`, `CustomerID`),
 PRIMARY KEY (`groupID`, `memberID`)
 );
 
@@ -91,5 +93,6 @@ FOREIGN KEY (`groupID`) REFERENCES Party (`groupID`),
 FOREIGN KEY (`saleItem`, `groceryID`) REFERENCES SalePromotion (`saleItem`, `groceryID`),
 PRIMARY KEY (`groupID`, `saleItem`, `groceryID`)
 );
+
 
 
