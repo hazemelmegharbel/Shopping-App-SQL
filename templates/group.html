@@ -8,4 +8,17 @@
             Specific Group page:
     </h3>
 
+    <ul class="list-group d-flex align-items-center">
+    {% for lists in list %}
+        <li class="groupList w-25 list-group-item blueItems">
+            <pre>
+                <div class="GroupListInfo"><h6>Item: {{lists[0]}}</h6><h6>Quantity: {{lists[1]}}</h6></div>
+            </pre>
+        </li>
+    {% endfor %}
+    </ul>
+
+    <form action="" method="post"><button>Join Group</button></form>
+
+
 {% endblock %}
