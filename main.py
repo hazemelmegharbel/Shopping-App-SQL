@@ -145,6 +145,17 @@ def items():
         results = cur.fetchall()
         cur.close()
         return render_template('listitems.html', list=results, Name=name)
+    elif request.method == "POST":
+        index = session.get('index', None)
+        quantity = request.form.get("quantity")
+        name = request.form.get("itemName")
+        if request.form.get("quantity"):
+            print(quantity)
+            print(index)
+            print(name)
+            f"UPDATE ListItem SET Quantity = {quantity} " \
+            f"WHERE CustomerID = {custID} AND ListNumber = {index} AND ItemName LIKE'%{name}%';"
+            return redirect(url_for('items'))
     else:
         return render_template('listitems.html')
 
