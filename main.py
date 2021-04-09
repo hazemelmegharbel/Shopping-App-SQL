@@ -51,6 +51,7 @@ def groups():
 @app.route("/groups/group", methods=['GET', 'POST'])
 def group():
     if request.method == "GET":
+        print("loading page")
         identifier = session.get('groupID', None)
         cur = mysql.connection.cursor()
 
@@ -64,21 +65,41 @@ def group():
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
+
+        query = f"SELECT COUNT(*) FROM GroupMembers WHERE GroupID = {identifier} AND memberID = {custID}"
+        cur.execute(query)
+        mysql.connection.commit()
+        total = cur.fetchall()
         cur.close()
-        return render_template('group.html', list=results)
+        return render_template('group.html', list=results, isMember=int(total[0][0]))
         # DISPLAY THE GROUP LIST
     elif request.method == "POST":
-        # RUN THE JOIN GROUP ONCLICK
-        cur = mysql.connection.cursor()
-        identifier = session.get('groupID', None)
-        query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) VALUES({identifier}, {custID}, {listNumber});"
-        cur.execute(query)
-        mysql.connection.commit()
-        query = f"UPDATE Party SET numberOfMembers= numberOfMembers+1 WHERE groupID={identifier};"
-        cur.execute(query)
-        mysql.connection.commit()
-        cur.close()
-        render_template('group.html' )
+        # CHECK WHAT KIND OF BUTTON
+        if request.form.get("JoinButton"):
+            print("joining group")
+            cur = mysql.connection.cursor()
+            identifier = session.get('groupID', None)
+            query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) VALUES({identifier}, {custID}, {listNumber});"
+            cur.execute(query)
+            mysql.connection.commit()
+            query = f"UPDATE Party SET numberOfMembers= numberOfMembers+1 WHERE groupID={identifier};"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('group'))
+        elif request.form.get("LeaveButton"):
+            print("leaving group")
+            cur = mysql.connection.cursor()
+            identifier = session.get('groupID', None)
+            query = f"DELETE FROM `ShoppingApplication`.`GroupMembers` WHERE memberID = {custID};"
+            cur.execute(query)
+            mysql.connection.commit()
+            query = f"UPDATE Party SET numberOfMembers= numberOfMembers-1 WHERE groupID={identifier};"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('groups'))
+        return render_template('group.html')
     return render_template('group.html')
 
 
