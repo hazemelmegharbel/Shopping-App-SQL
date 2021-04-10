@@ -18,7 +18,11 @@
     {% endfor %}
     </ul>
 
-    <form action="" method="post"><button>Join Group</button></form>
-
-
+    <form action="" method="post">
+    {% if isMember == 0 %}
+        <button name="JoinButton" value="JoinButton">Join Group</button>
+    {% else %}
+        <button name="LeaveButton" value="LeaveButton">Leave Group</button>
+    {% endif %}
+    </form>
 {% endblock %}

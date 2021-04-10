@@ -1,5 +1,5 @@
 import os
-
+from datetime import date
 from flask import Flask, request, session, url_for
 from flask import Flask, request, session, url_for, flash
 from flask import render_template
@@ -34,6 +34,14 @@ def home():
 def groups():
     if request.method == "GET":
         cur = mysql.connection.cursor()
+        query = f"SELECT * FROM PARTY"
+        cur.execute(query)
+        mysql.connection.commit()
+        results = cur.fetchall()
+        cur.close()
+        print(results)
+
+        cur = mysql.connection.cursor()
         query = f"SELECT P.groupName, G.groupID, AVG(CustomerRating)" \
                 f" FROM Customer C, GroupMembers G" \
                 f" INNER JOIN Party P ON P.groupID = G.groupID" \
@@ -46,16 +54,42 @@ def groups():
         print(results)
         return render_template('groups.html', lists=results)
     elif request.method == "POST":
-        data = request.form.get('listButton')
-        session['groupID'] = data
-        print(data)
-        return redirect(url_for('group'))
+        if request.form.get('listButton'):
+            data = request.form.get('listButton')
+            session['groupID'] = data
+            print(data)
+            return redirect(url_for('group'))
+        elif request.form.get('addButton'):
+            groupName = request.form.get('groupNameID')
+            cur = mysql.connection.cursor()
+            query = f"SELECT groupID FROM Party"
+            cur.execute(query)
+            mysql.connection.commit()
+            results = cur.fetchall()
+            cur.close()
+            print(results)
+            groupID = max(results)[0] + 1
+            print(groupID)
+            if groupName:
+                print(groupName)
+                cur = mysql.connection.cursor()
+                query = f"INSERT INTO `ShoppingApplication`.`Party`" \
+                        f"(groupID, creatorID, groupName, numberOfMembers, shoppingDate) " \
+                        f"VALUES ('{groupID}', '{custID}', '{groupName}', 1, null);"
+                cur.execute(query)
+                mysql.connection.commit()
+                query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) VALUES({groupID}, {custID}, {listNumber});"
+                cur.execute(query)
+                mysql.connection.commit()
+                cur.close()
+            return redirect(url_for('groups'))
     return render_template('groups.html')
 
 
 @app.route("/groups/group", methods=['GET', 'POST'])
 def group():
     if request.method == "GET":
+        print("loading page")
         identifier = session.get('groupID', None)
         cur = mysql.connection.cursor()
 
@@ -69,21 +103,41 @@ def group():
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
+
+        query = f"SELECT COUNT(*) FROM GroupMembers WHERE GroupID = {identifier} AND memberID = {custID}"
+        cur.execute(query)
+        mysql.connection.commit()
+        total = cur.fetchall()
         cur.close()
-        return render_template('group.html', list=results)
+        return render_template('group.html', list=results, isMember=int(total[0][0]))
         # DISPLAY THE GROUP LIST
     elif request.method == "POST":
-        # RUN THE JOIN GROUP ONCLICK
-        cur = mysql.connection.cursor()
-        identifier = session.get('groupID', None)
-        query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) VALUES({identifier}, {custID}, {listNumber});"
-        cur.execute(query)
-        mysql.connection.commit()
-        query = f"UPDATE Party SET numberOfMembers= numberOfMembers+1 WHERE groupID={identifier};"
-        cur.execute(query)
-        mysql.connection.commit()
-        cur.close()
-        render_template('group.html' )
+        # CHECK WHAT KIND OF BUTTON
+        if request.form.get("JoinButton"):
+            print("joining group")
+            cur = mysql.connection.cursor()
+            identifier = session.get('groupID', None)
+            query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) VALUES({identifier}, {custID}, {listNumber});"
+            cur.execute(query)
+            mysql.connection.commit()
+            query = f"UPDATE Party SET numberOfMembers= numberOfMembers+1 WHERE groupID={identifier};"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('group'))
+        elif request.form.get("LeaveButton"):
+            print("leaving group")
+            cur = mysql.connection.cursor()
+            identifier = session.get('groupID', None)
+            query = f"DELETE FROM `ShoppingApplication`.`GroupMembers` WHERE memberID = {custID};"
+            cur.execute(query)
+            mysql.connection.commit()
+            query = f"UPDATE Party SET numberOfMembers= numberOfMembers-1 WHERE groupID={identifier};"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('groups'))
+        return render_template('group.html')
     return render_template('group.html')
 
 
@@ -477,20 +531,47 @@ def list():
         cur.close()
         return render_template('viewlists.html', lists=results)
     elif request.method == "POST":
-        data = request.form.get('listButton')
-        parsed = data.split()
-        session['index'] = parsed[0]
-        session['name'] = parsed[1]
-        #print(data)
-        return redirect(url_for('items'))
+        if request.form.get('listButton'):
+            data = request.form.get('listButton')
+            parsed = data.split()
+            session['index'] = parsed[0]
+            session['name'] = parsed[1]
+            return redirect(url_for('items'))
+        elif request.form.get('deleteButton'):
+            data = request.form.get('deleteButton')
+            parsed = data.split()
+            session['index'] = parsed[0]
+            print(parsed[0])
+            cur = mysql.connection.cursor()
+            query = f"DELETE FROM CustomerList WHERE CustomerID={custID} AND ListNumber={parsed[0]}"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('list'))
     return render_template('viewLists.html')
 
 
 @app.route("/create/", methods=['GET', 'POST'])
 def create():
+    cur = mysql.connection.cursor()
+    query = f"SELECT ListNumber From CustomerList WHERE CustomerID = {custID}"
+    cur.execute(query)
+    mysql.connection.commit()
+    results = cur.fetchall()
+    results = results[0]
+    cur.close()
     if request.method == "POST":
         data = request.form.get('nameID')
-        print(data)
+        dateInsert = date.today().strftime("%d/%m/%Y")
+        insertNumber = max(results) + 1
+        if data:
+            print(data, "printing...")
+            cur = mysql.connection.cursor()
+            query = f"INSERT INTO `ShoppingApplication`.`CustomerList`(CustomerID, ListNumber, Name, CreationDate) " \
+                    f"VALUES ('{custID}', {insertNumber}, '{data}', {dateInsert});"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
     return render_template('createlist.html')
 
 
@@ -509,6 +590,49 @@ def items():
         results = cur.fetchall()
         cur.close()
         return render_template('listitems.html', list=results, Name=name)
+    elif request.method == "POST":
+        index = session.get('index', None)
+        quantity = request.form.get("quantity")
+        name = request.form.get("itemName")
+        if request.form.get("quantity"):
+            print(quantity)
+            print(index)
+            print(name)
+            cur = mysql.connection.cursor()
+            query = f"UPDATE ListItem SET Quantity = {quantity} " \
+                    f"WHERE CustomerID = {custID} AND ListNumber = {index} AND ItemName LIKE'%{name}%';"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('items'))
+        elif request.form.get("deleteButton"):
+            print("DELETE")
+            itemName = request.form.get("deleteButton")
+            print(itemName)
+            cur = mysql.connection.cursor()
+            query = f"DELETE FROM ListItem WHERE ItemName LIKE '%{itemName}%' AND CustomerID={custID} AND ListNumber={index}"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('items'))
+        elif request.form.get("addButton"):
+            print("ADDING")
+            newName = request.form.get("itemNameID")
+            newQuantity = request.form.get("quantityID")
+            if newName is not None:
+                cur = mysql.connection.cursor()
+                query = f"INSERT INTO `ShoppingApplication`.`ListItem` " \
+                f"(`ItemName`, `ListNumber`, `CustomerID`, `Quantity`) " \
+                f"VALUES ('{newName}', '{index}', '{custID}', '{newQuantity}')"
+                cur.execute(query)
+                mysql.connection.commit()
+                cur.close()
+            else:
+                # DISPLAY ERROR TO USER
+                pass
+            return redirect(url_for('items'))
+        else:
+            return redirect(url_for('items'))
     else:
         return render_template('listitems.html')
 

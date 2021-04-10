@@ -9,6 +9,15 @@
     </h3>
 
     <ul class="list-group d-flex align-items-center">
+
+        <li class="w-25 list-group-item blueItems" id="newItemListElement">
+            <pre>New Group</pre>
+                <form action="" method="post">
+                        <button class="btn pull-right top_right" name="addButton" value="1">&#x2713;</button>
+                        <pre>Group Name:  </pre>
+                        <input value="" id="groupNameID" name="groupNameID">
+                </form>
+            </li>
     {% for lists in lists %}
         <li class="groupList w-25 list-group-item blueItems">
             <pre>
