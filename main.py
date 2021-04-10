@@ -1,5 +1,5 @@
 import os
-
+from datetime import date
 from flask import Flask, request, session, url_for
 from flask import render_template
 
@@ -29,6 +29,14 @@ def home():
 def groups():
     if request.method == "GET":
         cur = mysql.connection.cursor()
+        query = f"SELECT * FROM PARTY"
+        cur.execute(query)
+        mysql.connection.commit()
+        results = cur.fetchall()
+        cur.close()
+        print(results)
+
+        cur = mysql.connection.cursor()
         query = f"SELECT P.groupName, G.groupID, AVG(CustomerRating)" \
                 f" FROM Customer C, GroupMembers G" \
                 f" INNER JOIN Party P ON P.groupID = G.groupID" \
@@ -46,6 +54,30 @@ def groups():
             session['groupID'] = data
             print(data)
             return redirect(url_for('group'))
+        elif request.form.get('addButton'):
+            groupName = request.form.get('groupNameID')
+            cur = mysql.connection.cursor()
+            query = f"SELECT groupID FROM Party"
+            cur.execute(query)
+            mysql.connection.commit()
+            results = cur.fetchall()
+            cur.close()
+            print(results)
+            groupID = max(results)[0] + 1
+            print(groupID)
+            if groupName:
+                print(groupName)
+                cur = mysql.connection.cursor()
+                query = f"INSERT INTO `ShoppingApplication`.`Party`" \
+                        f"(groupID, creatorID, groupName, numberOfMembers, shoppingDate) " \
+                        f"VALUES ('{groupID}', '{custID}', '{groupName}', 1, null);"
+                cur.execute(query)
+                mysql.connection.commit()
+                query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) VALUES({groupID}, {custID}, {listNumber});"
+                cur.execute(query)
+                mysql.connection.commit()
+                cur.close()
+            return redirect(url_for('groups'))
     return render_template('groups.html')
 
 
@@ -137,9 +169,25 @@ def list():
 
 @app.route("/create/", methods=['GET', 'POST'])
 def create():
+    cur = mysql.connection.cursor()
+    query = f"SELECT ListNumber From CustomerList WHERE CustomerID = {custID}"
+    cur.execute(query)
+    mysql.connection.commit()
+    results = cur.fetchall()
+    results = results[0]
+    cur.close()
     if request.method == "POST":
         data = request.form.get('nameID')
-        print(data)
+        dateInsert = date.today().strftime("%d/%m/%Y")
+        insertNumber = max(results) + 1
+        if data:
+            print(data, "printing...")
+            cur = mysql.connection.cursor()
+            query = f"INSERT INTO `ShoppingApplication`.`CustomerList`(CustomerID, ListNumber, Name, CreationDate) " \
+                    f"VALUES ('{custID}', {insertNumber}, '{data}', {dateInsert});"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
     return render_template('createlist.html')
 
 
@@ -203,6 +251,7 @@ def items():
             return redirect(url_for('items'))
     else:
         return render_template('listitems.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
