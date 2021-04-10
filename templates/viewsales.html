@@ -1,0 +1,22 @@
+{% extends "grocerytemplate.html" %}
+{% block title %} View Sales {% endblock %}
+{% block viewsales %}
+
+<h3 align="center">Sales: </h3>
+
+<ul class="list-group d-flex align-items-center">
+    {% for lists in list %}
+        <li class="groupList w-25 list-group-item">
+            <div>
+                <p>Item: {{lists[0]}}</p>
+                <p>Start Date: {{lists[2]}}</p>
+                <p>End Date: {{lists[3]}}</p>
+                <p>Discount: {{lists[4]}}</p>
+
+            </div>
+        </li>
+    <br />
+    {% endfor %}
+    </ul>
+
+{% endblock %}
