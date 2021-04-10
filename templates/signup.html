@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block title %} Sign Up {% endblock %}
 {% block signup %}
+
 <form method="POST">
     <h3 align="center">Sign Up</h3>
     <div class="form-group">
@@ -30,7 +31,7 @@
         class="form-control"
         id="Password2"
         name="Password2"
-        placeholder="Confrim Password"
+        placeholder="Confirm Password"
         >
     </div>
     <div class="form-group">
@@ -43,6 +44,7 @@
         placeholder="Enter Email"
         />
     </div>
+
     <div class="form-group">
         <label for="Street Name">Street Name</label>
         <input
@@ -63,7 +65,82 @@
         placeholder="Enter Unit Number"
         />
     </div>
+
+    <div class="form-group">
+        <label for="Phone Number">Phone Number</label>
+        <input
+        type="number"
+        class="form-control"
+        id="Phone Number"
+        name="Phone Number"
+        placeholder="Enter Phone Number"
+        />
+    </div>
+
+
+    <h6>Account Type</h6>
+    <label class="switch" for="userType">
+        <input type="checkbox" id="userType" onclick="toggleAccount()" name="userType" value="grocery">
+        <span class="slider"></span>
+    </label>
+    <div id="accountType">Customer</div>
+
+
+    <div class="form-group" id="FirstName">
+        <label for="First Name">First Name</label>
+        <input
+        type="text"
+        class="form-control"
+        id="First Name"
+        name="First Name"
+        placeholder="Enter First Name"
+        />
+    </div>
+
+    <div class="form-group" id="LastName">
+        <label for="Last Name">First Name</label>
+        <input
+        type="text"
+        class="form-control"
+        id="Last Name"
+        name="Last Name"
+        placeholder="Enter Last Name"
+        />
+    </div>
+
+    <div class="form-group" id="StoreName" style="display: none;">
+        <label for="Store Name">Store Name</label>
+        <input
+        type="text"
+        class="form-control"
+        id="Store Name"
+        name="Store Name"
+        placeholder="Enter Store Name"
+        />
+    </div>
+
     <br />
-    <button type="submit" class="btn btn-primary">Sign up!</button>
+    <button type="submit" class="btn btn-primary" name="signUp" id="signUp" value="clicked">Sign up!</button>
 </form>
+
+<script>
+    function toggleAccount(){
+        var x = document.getElementById("accountType");
+        var y = document.getElementById("FirstName");
+        var z = document.getElementById("LastName");
+        var s = document.getElementById("StoreName");
+        if(x.innerHTML === "Customer"){
+            x.innerHTML = "Grocery Store";
+            y.style.display = "none";
+            z.style.display = "none";
+            s.style.display = "block";
+        }else{
+            x.innerHTML = "Customer";
+            y.style.display = "block";
+            z.style.display = "block";
+            s.style.display = "none";
+        }
+    }
+</script>
+
 {% endblock %}

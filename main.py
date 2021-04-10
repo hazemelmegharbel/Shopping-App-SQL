@@ -14,12 +14,14 @@ import random
 app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'c7d@JGWtzKh'
+app.config['MYSQL_PASSWORD'] = 'Root_default1996'
 app.config['MYSQL_DB'] = 'ShoppingApplication'
 app.config['SECRET_KEY'] = 'KECRET_SEY'
 
 session = {}
 mysql = MySQL(app)
+
+session['logged_in'] = False
 
 custID = '100000001'
 listNumber = '1'
@@ -148,60 +150,48 @@ def signUp():
         return render_template('signup.html')
 
     elif request.method == "POST":
-        cur = mysql.connection.cursor()
-        Username = request.form.get('Username')
-        Password = request.form.get('Password')
-        Password2 = request.form.get('Password2')
-        Email = request.form.get('Email')
-        StreetName = request.form.get('Street Name')
-        UnitNumber = request.form.get('Unit Number')
-
-        #CHECK IF USER EXIST
-        queryCheck = f"SELECT * FROM User WHERE Email = '{Email}' "
-        cur.execute(queryCheck)
-        mysql.connection.commit()
-        exist = cur.fetchone()
-        cur.close()
-
-        # CONDITIONS
-        if exist:
-            #IF USER EXISTS
-            flash("Email already exists", category='error') #ERROR MESSAGE
-
-        elif len(Username) < 1:
-            flash("Username required", category='error')
-
-        elif len(Password) < 1:
-            flash("Password required", category='error')
-
-        elif Password != Password2:
-            flash("Passwords must match", category='error')
-
-        elif len(StreetName) < 1:
-            flash("Street name required", category='error')
-
-        elif len(UnitNumber) < 1:
-            flash("Unit number required", category='error')
-
-        else:
-
-            #Randomize an ID
-            randomID = random.randint(100000000,999999999)
-            print(randomID)
-
-            # Go through Users to find a matching ID
+        if request.form.get('signUp'):
             cur = mysql.connection.cursor()
-            IDCheck = f"SELECT UserID FROM User WHERE UserID = '{randomID}'"
-            cur.execute(IDCheck)
+            Username = request.form.get('Username')
+            Password = request.form.get('Password')
+            Password2 = request.form.get('Password2')
+            Email = request.form.get('Email')
+            StreetName = request.form.get('Street Name')
+            UnitNumber = request.form.get('Unit Number')
+            phoneNumber = request.form.get('Phone Number')
+            userType = request.form.get('userType')
+
+            #CHECK IF USER EXIST
+            queryCheck = f"SELECT * FROM User WHERE Email = '{Email}' "
+            cur.execute(queryCheck)
             mysql.connection.commit()
             exist = cur.fetchone()
-            cur.close
+            cur.close()
 
-            #if the ID exist then randomize ID again
-            while exist:
+            # CONDITIONS
+            if exist:
+                #IF USER EXISTS
+                flash("Email already exists", category='error') #ERROR MESSAGE
 
-                # Randomize an ID
-                randomID = random.randint(100000000, 999999999)
+            elif len(Username) < 1:
+                flash("Username required", category='error')
+
+            elif len(Password) < 1:
+                flash("Password required", category='error')
+
+            elif Password != Password2:
+                flash("Passwords must match", category='error')
+
+            elif len(StreetName) < 1:
+                flash("Street name required", category='error')
+
+            elif len(UnitNumber) < 1:
+                flash("Unit number required", category='error')
+
+            else:
+
+                #Randomize an ID
+                randomID = random.randint(100000000,999999999)
                 print(randomID)
 
                 # Go through Users to find a matching ID
@@ -212,21 +202,66 @@ def signUp():
                 exist = cur.fetchone()
                 cur.close
 
-                #if it doesnt exist then exit loop
+                #if the ID exist then randomize ID again
+                while exist:
 
-            #set userID to randomID when a unique id is found
-            userID = randomID
+                    # Randomize an ID
+                    randomID = random.randint(100000000, 999999999)
+                    print(randomID)
 
-            #INSERT USER
-            cur = mysql.connection.cursor()
-            query = f"INSERT INTO `ShoppingApplication`.`User` " \
-                    f"(`userID`, `Username`, `Password`, `Email`, `StreetName`, `UnitNumber`) " \
-                    f"VALUES ('{userID}', '{Username}', '{Password}', '{Email}', '{StreetName}', '{UnitNumber}')"
-            cur.execute(query)
-            mysql.connection.commit()
-            cur.close()
+                    # Go through Users to find a matching ID
+                    cur = mysql.connection.cursor()
+                    IDCheck = f"SELECT UserID FROM User WHERE UserID = '{randomID}'"
+                    cur.execute(IDCheck)
+                    mysql.connection.commit()
+                    exist = cur.fetchone()
+                    cur.close
 
-            flash("Account created", category='success')
+                    #if it doesnt exist then exit loop
+
+                #set userID to randomID when a unique id is found
+                userID = randomID
+
+                #INSERT USER
+                cur = mysql.connection.cursor()
+                query = f"INSERT INTO `ShoppingApplication`.`User` " \
+                        f"(`userID`, `Username`, `Password`, `Email`, `StreetName`, `UnitNumber`) " \
+                        f"VALUES ('{userID}', '{Username}', '{Password}', '{Email}', '{StreetName}', '{UnitNumber}')"
+                cur.execute(query)
+                mysql.connection.commit()
+                cur.close()
+
+                cur = mysql.connection.cursor()
+                query = f"INSERT INTO `ShoppingApplication`.`UserPhoneNumber` " \
+                        f"(`userID`, `PhoneNumber`) " \
+                        f"VALUES ('{userID}', '{phoneNumber}')"
+                cur.execute(query)
+                mysql.connection.commit()
+                cur.close()
+
+                if userType == "grocery":
+                    #INSERT GROCERYSTORE
+                    StoreName = request.form.get('StoreName')
+                    cur = mysql.connection.cursor()
+                    query = f"INSERT INTO `ShoppingApplication`.`GroceryStore` " \
+                            f"(`userID`, `StoreName`) " \
+                            f"VALUES ('{userID}', '{StoreName}')"
+                    cur.execute(query)
+                    mysql.connection.commit()
+                    cur.close()
+                else:
+                    #INSERT CUSTOMER
+                    FirstName = request.form.get('FirstName')
+                    LastName = request.form.get('LastName')
+                    cur = mysql.connection.cursor()
+                    query = f"INSERT INTO `ShoppingApplication`.`Customer` " \
+                            f"(`userID`, `FirstName`, `LastName`, `CustomerRating`) " \
+                            f"VALUES ('{userID}', '{FirstName}', '{LastName}', 5)"
+                    cur.execute(query)
+                    mysql.connection.commit()
+                    cur.close()
+
+                flash("Account created", category='success')
 
             return redirect(url_for('login'))
 
@@ -253,7 +288,7 @@ def login():
         mysql.connection.commit()
         user=cur.fetchone()
         cur.close()
-
+        print(user)
         #If the user exist and password and username is correct
         if user:
 
@@ -265,7 +300,7 @@ def login():
             USTName = user[4]
             UUNumber = user[5]
 
-
+            print(UID)
             #SAVE USER DATA INTO SESSION
             session['logged_in'] = True
             session['UserID'] = UID
@@ -278,12 +313,12 @@ def login():
 
             #CHECK IF User is a customer
             cur = mysql.connection.cursor()
-            query = f"SELECT * FROM Customer WHERE UserID = '{UID}'"
+            query = f"SELECT * FROM Customer WHERE UserID = {UID}"
             cur.execute(query)
             mysql.connection.commit()
             customer = cur.fetchone()
             cur.close()
-
+            print(customer)
             #If user is already a customer then redirect them to user info page
             if customer:
 
