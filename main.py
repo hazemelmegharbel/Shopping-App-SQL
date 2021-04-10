@@ -153,12 +153,43 @@ def items():
             print(quantity)
             print(index)
             print(name)
-            f"UPDATE ListItem SET Quantity = {quantity} " \
-            f"WHERE CustomerID = {custID} AND ListNumber = {index} AND ItemName LIKE'%{name}%';"
+            cur = mysql.connection.cursor()
+            query = f"UPDATE ListItem SET Quantity = {quantity} " \
+                    f"WHERE CustomerID = {custID} AND ListNumber = {index} AND ItemName LIKE'%{name}%';"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('items'))
+        elif request.form.get("deleteButton"):
+            print("DELETE")
+            itemName = request.form.get("deleteButton")
+            print(itemName)
+            cur = mysql.connection.cursor()
+            query = f"DELETE FROM ListItem WHERE ItemName LIKE '%{itemName}%' AND CustomerID={custID} AND ListNumber={index}"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('items'))
+        elif request.form.get("addButton"):
+            print("ADDING")
+            newName = request.form.get("itemNameID")
+            newQuantity = request.form.get("quantityID")
+            if newName is not None:
+                cur = mysql.connection.cursor()
+                query = f"INSERT INTO `ShoppingApplication`.`ListItem` " \
+                f"(`ItemName`, `ListNumber`, `CustomerID`, `Quantity`) " \
+                f"VALUES ('{newName}', '{index}', '{custID}', '{newQuantity}')"
+                cur.execute(query)
+                mysql.connection.commit()
+                cur.close()
+            else:
+                # DISPLAY ERROR TO USER
+                pass
+            return redirect(url_for('items'))
+        else:
             return redirect(url_for('items'))
     else:
         return render_template('listitems.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
