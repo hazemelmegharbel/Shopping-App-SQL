@@ -293,6 +293,9 @@ def custcreate():
             mysql.connection.commit()
             cur.close()
 
+            session['FName'] = FName
+            session['LName'] = LName
+
             return redirect(url_for('home'))
 
     return render_template('custcreate.html')
@@ -309,24 +312,17 @@ def userinfo():
 
         UID = session['UserID']
 
-        #GET Customer data
-        cur = mysql.connection.cursor()
-        query = f"SELECT * FROM Customer WHERE UserID = '{UID}'"
-        cur.execute(query)
-        mysql.connection.commit()
-        cus=cur.fetchone()
-        cur.close()
+        Username = session['Username']
+        Password = session['Password']
+        Email = session['Email']
+        StName = session['StreetName']
+        UnitNumber = session['UnitNumber']
 
-        #GET User data
-        cur = mysql.connection.cursor()
-        query = f"SELECT * FROM User WHERE UserID = '{UID}'"
-        cur.execute(query)
-        mysql.connection.commit()
-        use=cur.fetchone()
-        cur.close()
+        FName = session['FName']
+        LName = session['LName']
 
         #PASS data so html can access data
-        return render_template('userinfo.html', cusdata=cus, usedata=use)
+        return render_template('userinfo.html', UserID = UID, Username = Username, Password = Password, Email = Email, StName = StName, UnitNumber = UnitNumber, FName = FName, LName = LName)
 
     elif request.method == 'POST':
         return redirect(url_for('edituserinfo'))
@@ -336,24 +332,6 @@ def userinfo():
 
 @app.route("/edituserinfo/", methods=['GET', 'POST'])
 def edituserinfo():
-    UID = session['UserID']
-
-    #GET Customer DATA
-    cur = mysql.connection.cursor()
-    query = f"SELECT * FROM Customer WHERE UserID = '{UID}'"
-    cur.execute(query)
-    mysql.connection.commit()
-    cus = cur.fetchone()
-    cur.close()
-
-    #GET User DATA
-    cur = mysql.connection.cursor()
-    query = f"SELECT * FROM User WHERE UserID = '{UID}'"
-    cur.execute(query)
-    mysql.connection.commit()
-    use = cur.fetchone()
-    cur.close()
-
 
     if request.method == 'GET':
 
@@ -364,8 +342,17 @@ def edituserinfo():
         if not loggedin:
             redirect(url_for('login'))
 
+        Username = session['Username']
+        Password = session['Password']
+        Email = session['Email']
+        StName = session['StreetName']
+        UnitNumber = session['UnitNumber']
 
-        return render_template('edituserinfo.html', cusinfo=cus, useinfo=use)
+        FName = session['FName']
+        LName = session['LName']
+
+        return render_template('edituserinfo.html', Username=Username, Password=Password, Email=Email,
+                               StName=StName, UnitNumber=UnitNumber, FName=FName, LName=LName)
 
     elif request.method == 'POST':
 
@@ -399,6 +386,9 @@ def edituserinfo():
             flash("Unit number required", category='error')
         else:
 
+            #GET USERID
+            UID = session['UserID']
+
             #UPDATE USER QUERY
             cur = mysql.connection.cursor()
             query = f"UPDATE User " \
@@ -417,13 +407,46 @@ def edituserinfo():
             mysql.connection.commit()
             cur.close()
 
+            #UPDATE SESSION DATA
+            session['Username'] = Username
+            session['Password'] = Password
+            session['Email'] = Email
+            session['StreetName'] = StreetName
+            session['UnitNumber'] = UnitNumber
+
+            session['FName'] = Fname
+            session['LName'] = Lname
+
             flash("Edit Successful", category="success")
 
             return redirect(url_for('userinfo'))
 
-        return render_template('edituserinfo.html', cusinfo=cus, useinfo=use)
 
-    return render_template('edituserinfo.html',cusinfo=cus, useinfo=use)
+        #DEFAULT VALUES
+        Username = session['Username']
+        Password = session['Password']
+        Email = session['Email']
+        StName = session['StreetName']
+        UnitNumber = session['UnitNumber']
+
+        FName = session['FName']
+        LName = session['LName']
+
+        return render_template('edituserinfo.html', Username=Username, Password=Password, Email=Email,
+                               StName=StName, UnitNumber=UnitNumber, FName=FName, LName=LName)
+
+    #DEFAULT VALUES
+    Username = session['Username']
+    Password = session['Password']
+    Email = session['Email']
+    StName = session['StreetName']
+    UnitNumber = session['UnitNumber']
+
+    FName = session['FName']
+    LName = session['LName']
+
+    return render_template('edituserinfo.html',Username=Username, Password=Password, Email=Email,
+                               StName=StName, UnitNumber=UnitNumber, FName=FName, LName=LName)
 
 @app.route("/list/", methods=['GET', 'POST'])
 def list():
