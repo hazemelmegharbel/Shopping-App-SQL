@@ -62,7 +62,7 @@ CREATE TABLE `ShoppingApplication`.`ListItem`(
 `ListNumber` INT NOT NULL,
 `CustomerID` INT NOT NULL,
 `Quantity` INT,
-FOREIGN KEY (`ListNumber`, `CustomerID`) REFERENCES CustomerList(`ListNumber`, `CustomerID`),
+CONSTRAINT FOREIGN KEY (`ListNumber`, `CustomerID`) REFERENCES CustomerList(`ListNumber`, `CustomerID`) ON DELETE CASCADE,
 PRIMARY KEY (`ItemName`, `ListNumber`, `CustomerID`));
 
 CREATE TABLE `ShoppingApplication`.`Party`(

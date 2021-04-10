@@ -41,10 +41,11 @@ def groups():
         print(results)
         return render_template('groups.html', lists=results)
     elif request.method == "POST":
-        data = request.form.get('listButton')
-        session['groupID'] = data
-        print(data)
-        return redirect(url_for('group'))
+        if request.form.get('listButton'):
+            data = request.form.get('listButton')
+            session['groupID'] = data
+            print(data)
+            return redirect(url_for('group'))
     return render_template('groups.html')
 
 
@@ -114,11 +115,23 @@ def list():
         cur.close()
         return render_template('viewlists.html', lists=results)
     elif request.method == "POST":
-        data = request.form.get('listButton')
-        parsed = data.split()
-        session['index'] = parsed[0]
-        session['name'] = parsed[1]
-        return redirect(url_for('items'))
+        if request.form.get('listButton'):
+            data = request.form.get('listButton')
+            parsed = data.split()
+            session['index'] = parsed[0]
+            session['name'] = parsed[1]
+            return redirect(url_for('items'))
+        elif request.form.get('deleteButton'):
+            data = request.form.get('deleteButton')
+            parsed = data.split()
+            session['index'] = parsed[0]
+            print(parsed[0])
+            cur = mysql.connection.cursor()
+            query = f"DELETE FROM CustomerList WHERE CustomerID={custID} AND ListNumber={parsed[0]}"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('list'))
     return render_template('viewLists.html')
 
 

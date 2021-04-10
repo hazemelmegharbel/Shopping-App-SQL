@@ -11,9 +11,11 @@
     <ul class="list-group d-flex align-items-center">
     {% for lists in lists %}
         <li class="groupList w-25 list-group-item blueItems">
+            <form action="" method="post">
+                    <button class="btn pull-right top_right" name="deleteButton" value="{{lists[2]}}">x</button>
+            </form>
             <pre>
                 <form action="" method="post"><button name="listButton" value="{{lists[2]}} {{lists[0]}}">{{lists[0]}}{{lists[1]}}</button></form>
-
             </pre>
         </li>
     {% endfor %}
