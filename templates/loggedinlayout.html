@@ -30,46 +30,41 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
 
-      <!-- This layout only shows home, signup and login in the nav bar because the user is not logged in -->
+      <!-- IF THE USER IS LOGGED IN THEN HE CAN SEE THESE IN THE NAV BAR -->
 
     <ul class="navbar-nav mr-auto">
 
+        <!-- idk what to do with home cause home is in both layout and loggedin layout but home uses layout so the page can only see login and signup -->
             <li class="nav-item active">
                 <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
             </li>
 
             <li class="navbar-nav">
-                <a class="nav-item nav-link" id="signup" href="/signup/">Sign Up</a>
+                <a class="nav-item nav-link" id="userinfo" href="/userinfo/">My Info</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="#">Groups</a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Lists
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="#">Create</a>
+                    <a class="dropdown-item" href="#">View</a>
+                </div>
             </li>
 
             <li class="navbar-nav">
-                <a class="nav-item nav-link" id="login" href="/login/">Log in</a>
+                <a class="nav-item nav-link" id="logout" href="/logout/"> Log out</a>
             </li>
 
-      <li class="nav-item active">
-        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/groups/">Groups</a>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Lists
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="/create/">Create</a>
-          <a class="dropdown-item" href="/list/">View</a>
-        </div>
-      </li>
     </ul>
   </div>
 </nav>
 
-{% block list %}{% endblock %}
-{% block listitems %}{% endblock %}
-{% block groups %}{% endblock %}
-{% block group %}{% endblock %}
-{% block create %}{% endblock %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -86,10 +81,12 @@
         {% endif %}
     {% endwith %}
 
-
-{% block signup %}{% endblock %}
-{% block login %}{% endblock %}
-
+{% block list %}{% endblock %}
+{% block listitems %}{% endblock %}
+{% block custcreate %}{% endblock %}
+{% block info %}{% endblock %}
+{% block editinfo %}{% endblock %}
+{% block logout %}{% endblock %}
 
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

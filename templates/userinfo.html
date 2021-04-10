@@ -1,0 +1,48 @@
+{% extends "loggedinlayout.html" %}
+{% block title %} My Info {% endblock %}
+{% block info %}
+
+    <div>
+        <p class="font-weight-bold">User ID:</p>
+        <p>{{UserID}}</p>
+    </div>
+
+    <div>
+        <p class="font-weight-bold">First Name:</p>
+        <p>{{FName}}</p>
+    </div>
+
+    <div>
+        <p class="font-weight-bold">Last Name:</p>
+        <p>{{LName}}</p>
+    </div>
+
+    <div>
+        <p class="font-weight-bold">Username:</p>
+        <p>{{Username}}</p>
+    </div>
+
+    <div>
+        <p class="font-weight-bold">Password:</p>
+        <p>{{Password}}</p>
+    </div>
+
+    <div>
+        <p class="font-weight-bold">Email:</p>
+        <p>{{Email}}</p>
+    </div>
+
+    <div>
+        <p class="font-weight-bold">Street Name:</p>
+        <p>{{StName}}</p>
+    </div>
+
+    <div>
+        <p class="font-weight-bold">Unit Number:</p>
+        <p>{{UnitNumber}}</p>
+    </div>
+<form method="POST">
+    <br />
+    <button type="submit" class="btn btn-primary">Edit</button>
+</form>
+{% endblock %}

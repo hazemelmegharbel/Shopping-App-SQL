@@ -1,0 +1,95 @@
+{% extends "loggedinlayout.html" %}
+{% block title %} Edit {% endblock %}
+{% block editinfo %}
+    <form method="POST">
+    <h3 align="center">Edit Info</h3>
+
+    <div class="form-group">
+        <label for="FName">First Name</label>
+        <input
+                type="text"
+                class="form-control"
+                id="FName"
+                name="FName"
+                value="{{FName}}"
+        >
+    </div>
+
+    <div class="form-group">
+        <label for="LName">Last Name</label>
+        <input
+            type="text"
+            class="form-control"
+            id="LName"
+            name="LName"
+            value="{{LName}}"
+        >
+    </div>
+
+    <div class="form-group">
+        <label for="Username">Username</label>
+        <input
+        type="text"
+        class="form-control"
+        id="Username"
+        name="Username"
+        value="{{Username}}"
+        />
+    </div>
+
+    <div class="form-group">
+        <label for="Password">Password</label>
+        <input
+        type="password"
+        class="form-control"
+        id="Password"
+        name="Password"
+        value="{{Password}}"
+        />
+    </div>
+
+    <div class="form-group">
+        <label for="Password2">Confirm Password</label>
+        <input
+        type="password"
+        class="form-control"
+        id="Password2"
+        name="Password2"
+        value="{{Password}}"
+        />
+    </div>
+
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <input
+        type="email"
+        class="form-control"
+        id="Email"
+        name="Email"
+        value="{{Email}}"
+        />
+    </div>
+    <div class="form-group">
+        <label for="Street Name">Street Name</label>
+        <input
+        type="text"
+        class="form-control"
+        id="Street Name"
+        name="Street Name"
+        value="{{StName}}"
+        />
+    </div>
+    <div class="form-group">
+        <label for="Unit Number">Unit Number</label>
+        <input
+        type="number"
+        class="form-control"
+        id="Unit Number"
+        name="Unit Number"
+        value="{{UnitNumber}}"
+        />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Confirm</button>
+</form>
+{% endblock %}
