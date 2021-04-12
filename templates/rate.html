@@ -1,0 +1,9 @@
+{% extends "loggedinlayout.html" %}
+
+{% block rates %}
+<h4>Rating User: {{name}}</h4>
+<form method="post">
+    <button name="upvote" value="1">Upvote</button>
+    <button name="downvote" value="1">Downvote</button>
+</form>
+{% endblock %}

@@ -30,6 +30,34 @@
     height: 150px;
 }
 
+.memberDiv{
+    position: relative;
+    width: 400px;
+}
+
+.rateButton{
+    position: absolute;
+    right: 10px;
+    top: 10px
+}
+
+.flex-container{
+    display: flex;
+}
+
+.flex-child{
+    flex: 1;
+}
+
+.flex-child:first-child{
+    margin-right: 20px
+}
+
+.flex-child:second-child{
+    margin-right: 20px
+}
+
+
 .listButtonInfo{
     margin: 0px;
     margin-left: 10px;

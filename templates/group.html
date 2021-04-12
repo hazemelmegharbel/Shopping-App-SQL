@@ -1,28 +1,91 @@
-{% extends "layout.html" %}
+{% extends "loggedinlayout.html" %}
 
 {% block group %}
     <!-- Posts are created using a for loop iterating over the posts variable
     in flaskblog.py -->
 
-    <h3>
-            Specific Group page:
+    <h3 align="center">
+            {{name}}
     </h3>
+    <h4 align="center">
+        Creator: {{creator}}
+    </h4>
+    <div class="flex-container">
+        <div class="flex-child">
+            {% if isMember != 0 %}
+            <h4>Members:</h4>
+            <ul>
 
-    <ul class="list-group d-flex align-items-center">
-    {% for lists in list %}
-        <li class="groupList w-25 list-group-item blueItems">
-            <pre>
-                <div class="GroupListInfo"><h6>Item: {{lists[0]}}</h6><h6>Quantity: {{lists[1]}}</h6></div>
-            </pre>
-        </li>
-    {% endfor %}
-    </ul>
-
+                {% for Members in members %}
+                    <div class="memberDiv">
+                        <li class="list-group-item">
+                            <div>{{Members[0]}}</div>
+                            {% if Members[1] != user %}
+                                <form method="post">
+                                    <button name="rateButton" class="rateButton" value="{{Members[1]}}">Rate</button>
+                                    <input type="hidden" value="{{Members[0]}}" name="memberName">
+                                </form>
+                            <div>Rating: </div>
+                            {% endif %}
+                        </li>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            </ul>
+        </div>
+        <div class="flex-child">
+            <h4>Group List: </h4>
+            <ul class="list-group">
+            {% for lists in list %}
+                <li class="groupList list-group-item blueItems">
+                    <pre>
+                        <div class="GroupListInfo"><h6>Item: {{lists[0]}}</h6><h6>Quantity: {{lists[1]}}</h6></div>
+                    </pre>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="flex-child">
+            {% if isMember != 0 %}
+            <h4>Sales: </h4>
+            <ul>
+                {% for sale in sales %}
+                <li class="list-group-item">
+                    <div class="container">
+                        <div>
+                            Store Name: {{sale[0]}}
+                        </div>
+                        <div>
+                            Item: {{sale[1]}}
+                        </div>
+                        <div>
+                            Start date: {{sale[2]}}
+                        </div>
+                        <div>
+                            End date: {{sale[3]}}
+                        </div>
+                        <div>
+                            Discount Amount: {{sale[4]}}%
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
     <form action="" method="post">
-    {% if isMember == 0 %}
-        <button name="JoinButton" value="JoinButton">Join Group</button>
-    {% else %}
-        <button name="LeaveButton" value="LeaveButton">Leave Group</button>
-    {% endif %}
+        <div align="center">
+        {% if isMember == 0 %}
+            <button class="membershipButton" name="JoinButton" value="JoinButton" align="center">Join Group</button>
+        {% else %}
+            <button class="membershipButton" name="LeaveButton" value="LeaveButton" align="center">Leave Group</button>
+        {% endif %}
+        </div>
+
     </form>
+
+
+
+
 {% endblock %}

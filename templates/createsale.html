@@ -1,0 +1,61 @@
+{% extends "grocerytemplate.html" %}
+{% block title %} Create Sales {% endblock %}
+<!-- CREATE TABLE `ShoppingApplication`.`SalePromotion`(
+`SaleItem` VARCHAR(45) NOT NULL,
+`GroceryID` INT NOT NULL,
+`SaleStart` DATE,
+`SaleEnd` DATE,
+`Discount` FLOAT,
+CHECK (`SaleStart` < `SaleEnd`),
+FOREIGN KEY (`GroceryID`) REFERENCES GroceryStore(`UserID`),
+PRIMARY KEY (`SaleItem`, `GroceryID`)); -->
+
+{% block createsales %}
+
+<form method="POST">
+    <h3 align="center">Create Sale</h3>
+    <div class="form-group">
+        <label for="SaleItem">Sale Item</label>
+        <input
+        type="text"
+        class="form-control"
+        id="SaleItem"
+        name="SaleItem"
+        placeholder="Enter Sale Item"
+        />
+    </div>
+    <div class="form-group">
+        <label for="StartDate">Start Date</label>
+        <input
+        type="date"
+        class="form-control"
+        id="StartDate"
+        name="StartDate"
+        placeholder="Enter Start Date"
+        />
+    </div>
+    <div class="form-group">
+        <label for="EndDate"> End Date</label>
+        <input
+        type="date"
+        class="form-control"
+        id="EndDate"
+        name="EndDate"
+        placeholder="Enter End Date"
+        >
+    </div>
+    <div class="form-group">
+        <label for="Discount">Discount</label>
+        <input
+        type="number"
+        class="form-control"
+        id="Discount"
+        name="Discount"
+        placeholder="Enter Discount"
+        step="0.01"
+        />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary" name="enterSale" id="enterSale" value="clicked">Submit Sale!</button>
+</form>
+{% endblock %}

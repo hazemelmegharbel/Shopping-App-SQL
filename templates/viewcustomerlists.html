@@ -1,0 +1,18 @@
+{% extends "grocerytemplate.html" %}
+{% block title %} View User Lists {% endblock %}
+{% block viewuserlists %}
+
+<h3 align="center">View Desirable Items: </h3>
+
+<ul class="list-group d-flex align-items-center">
+    {% for lists in list %}
+        <li class="groupList w-25 list-group-item">
+            <div>
+                <p>Item: {{lists[0]}}</p>
+            </div>
+        </li>
+    <br />
+    {% endfor %}
+    </ul>
+
+{% endblock %}

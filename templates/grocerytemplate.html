@@ -29,31 +29,32 @@
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
-
-      <!-- This layout only shows home, signup and login in the nav bar because the user is not logged in -->
+      <!-- IF THE USER IS LOGGED IN THEN HE CAN SEE THESE IN THE NAV BAR -->
 
     <ul class="navbar-nav mr-auto">
 
-            <li class="nav-item active">
-                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            <li class="nav-item">
+                <a class="nav-link" href="/viewlocallists/">View Local Lists</a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Sales
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/createsale/">Create</a>
+                    <a class="dropdown-item" href="/viewsales/">View</a>
+                </div>
             </li>
 
             <li class="navbar-nav">
-                <a class="nav-item nav-link" id="signup" href="/signup/">Sign Up</a>
+                <a class="nav-item nav-link" id="logout" href="/logout/"> Log out</a>
             </li>
 
-            <li class="navbar-nav">
-                <a class="nav-item nav-link" id="login" href="/login/">Log in</a>
-            </li>
     </ul>
   </div>
 </nav>
 
-{% block list %}{% endblock %}
-{% block listitems %}{% endblock %}
-{% block groups %}{% endblock %}
-{% block group %}{% endblock %}
-{% block create %}{% endblock %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -71,10 +72,12 @@
     {% endwith %}
 
 
-{% block signup %}{% endblock %}
-{% block login %}{% endblock %}
 
-
+{% block info %}{% endblock %}
+{% block editgroceryinfo %}{% endblock %}
+{% block viewuserlists %}{% endblock %}
+{% block viewsales %} {% endblock %}
+{% block createsales %} {% endblock %}
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
