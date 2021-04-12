@@ -112,6 +112,7 @@ def group():
         mysql.connection.commit()
         results = cur.fetchall()
 
+        current = datetime.today().strftime("%Y-%m-%d")
         # GET THE SALES ASSOCIATED WITH A GROUP
         query = f"SELECT G.StoreName, S.SaleItem, S.SaleStart, S.SaleEnd, S.Discount FROM SalePromotion S " \
                 f"INNER JOIN GroceryStore G ON G.UserID = S.GroceryID " \
@@ -119,7 +120,8 @@ def group():
                 f"(SELECT L.ItemName FROM ListItem L " \
                 f"WHERE CustomerID IN " \
                 f"(SELECT memberID FROM GroupMembers WHERE L.CustomerID = memberID " \
-                f"AND L.ListNumber = UsesList AND GroupID = {identifier}));"
+                f"AND L.ListNumber = UsesList AND GroupID = {identifier}))" \
+                f" AND S.SaleEnd > {current};"
         cur.execute(query)
         mysql.connection.commit()
         sales = cur.fetchall()
@@ -457,7 +459,8 @@ def login():
 
                 session['FName'] = customer[1] #Customers first name
                 session['LName'] = customer[2] #Customers second name
-                session['useList'] = recent[0]
+                if recent is not None:
+                    session['useList'] = recent[0]
                 return redirect(url_for('userinfo'))
 
             elif grocery:
@@ -685,6 +688,7 @@ def createsale():
                 cur.close()
     return render_template('createsale.html')
 
+
 @app.route("/viewsales/", methods=['GET', 'POST'])
 def viewsales():
     UID = session['UserID']
@@ -747,6 +751,7 @@ def logout():
 
 
     return render_template('logout.html')
+
 
 @app.route("/custcreate/", methods=['GET', 'POST'])
 def custcreate():
@@ -946,6 +951,7 @@ def list():
         print(results)
         cur.close()
         return render_template('viewlists.html', lists=results)
+
     elif request.method == "POST":
         if request.form.get('listButton'):
             data = request.form.get('listButton')
@@ -956,16 +962,43 @@ def list():
         elif request.form.get('deleteButton'):
 
             # ADD FUNCTIONALITY TO PREVENT DELETING A BOUND LIST
-
             data = request.form.get('deleteButton')
             parsed = data.split()
             session['index'] = parsed[0]
             print(parsed[0])
             cur = mysql.connection.cursor()
-            query = f"DELETE FROM CustomerList WHERE CustomerID={UID} AND ListNumber={parsed[0]}"
+
+            query = f"SELECT COUNT(*), P.groupName FROM GroupMembers G INNER JOIN " \
+                    f"Party P ON P.groupID = G.groupID WHERE memberID={UID} AND UsesList={parsed[0]};"
+
             cur.execute(query)
             mysql.connection.commit()
+            info = cur.fetchone()
+            listUsed = info[0]
+            inGroup = info[1]
+            if listUsed == 0:
+                query = f"DELETE FROM CustomerList WHERE CustomerID={UID} AND ListNumber={parsed[0]}"
+                cur.execute(query)
+                mysql.connection.commit()
+
+                # SET active list to most recent created
+                cur = mysql.connection.cursor()
+                query = f"SELECT ListNumber FROM CustomerList " \
+                        f"WHERE CustomerID = '{UID}' GROUP BY CustomerID HAVING MAX(CreationDate);"
+                cur.execute(query)
+                mysql.connection.commit()
+                recent = cur.fetchone()
+
+                if recent is not None:
+                    session['useList'] = recent[0]
+                else:
+                    session['useList'] = None
+
+            else:
+                display = "Leave group {}".format(inGroup)
+                flash(message=display, category='error')
             cur.close()
+
             return redirect(url_for('list'))
     return render_template('viewLists.html')
 
@@ -999,7 +1032,8 @@ def create():
 
             #Set the list to the current shopping list
             session['useList'] = insertNumber
-            print()
+            session['name'] = data
+            return redirect(url_for('items'))
 
     return render_template('createlist.html')
 
@@ -1034,6 +1068,7 @@ def items():
             cur.execute(query)
             mysql.connection.commit()
             cur.close()
+            session['useList'] = index
             return redirect(url_for('items'))
         elif request.form.get("deleteButton"):
             print("DELETE")
@@ -1049,19 +1084,23 @@ def items():
             print("ADDING")
             newName = request.form.get("itemNameID")
             newQuantity = request.form.get("quantityID")
-            if newName is not None:
+            print(newName)
+            if not newName:
+                print("none")
+                flash(message='Add an item name', category='error')
+            elif not newQuantity.isdigit():
+                print("digit")
+                flash(message='Quantity must be an integer', category='error')
+            else:
+                print("else")
                 cur = mysql.connection.cursor()
                 query = f"INSERT INTO `ShoppingApplication`.`ListItem` " \
-                f"(`ItemName`, `ListNumber`, `CustomerID`, `Quantity`) " \
-                f"VALUES ('{newName}', '{index}', '{UID}', '{newQuantity}')"
+                        f"(`ItemName`, `ListNumber`, `CustomerID`, `Quantity`) " \
+                        f"VALUES ('{newName}', '{index}', '{UID}', '{newQuantity}')"
                 cur.execute(query)
                 mysql.connection.commit()
                 cur.close()
-            else:
-                # DISPLAY ERROR TO USER
-                pass
-            return redirect(url_for('items'))
-        else:
+                session['useList'] = index
             return redirect(url_for('items'))
     else:
         return render_template('listitems.html')
