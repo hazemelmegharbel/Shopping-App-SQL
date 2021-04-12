@@ -59,6 +59,7 @@ def groups():
         if request.form.get('listButton'):
             data = request.form.get('listButton')
             session['groupID'] = data
+            session['groupName'] = request.form.get('groupName')
             print(data)
             return redirect(url_for('group'))
         elif request.form.get('addButton'):
@@ -93,34 +94,70 @@ def group():
     UID = session['UserID']
     listNumber = session['useList']
     identifier = session['groupID']
+    Name = session['groupName']
     print(listNumber, identifier)
     if request.method == "GET":
         print("loading page")
 
         cur = mysql.connection.cursor()
 
+        # GET THE GROUP LIST
         query = f"SELECT L.ItemName, SUM(L.Quantity) " \
                 f"FROM ListItem L " \
                 f"WHERE CustomerID IN " \
                 f"(SELECT memberID FROM GroupMembers " \
                 f"WHERE L.CustomerID = memberID AND L.ListNumber = UsesList AND GroupID = {identifier})" \
                 f"GROUP BY L.ItemName;"
-
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
+
+        # GET THE SALES ASSOCIATED WITH A GROUP
+        query = f"SELECT G.StoreName, S.SaleItem, S.SaleStart, S.SaleEnd, S.Discount FROM SalePromotion S " \
+                f"INNER JOIN GroceryStore G ON G.UserID = S.GroceryID " \
+                f"WHERE S.SaleItem IN " \
+                f"(SELECT L.ItemName FROM ListItem L " \
+                f"WHERE CustomerID IN " \
+                f"(SELECT memberID FROM GroupMembers WHERE L.CustomerID = memberID " \
+                f"AND L.ListNumber = UsesList AND GroupID = {identifier}));"
+        cur.execute(query)
+        mysql.connection.commit()
+        sales = cur.fetchall()
+
+        # CHECK IF THE USER IS A MEMBER
         query = f"SELECT COUNT(*) FROM GroupMembers WHERE GroupID = {identifier} AND memberID = {UID}"
         cur.execute(query)
         mysql.connection.commit()
         total = cur.fetchone()
+
+        # CHECK IF THE USER IS THE CREATOR
+        query = f"SELECT COUNT(*) FROM Party WHERE GroupID = {identifier} AND creatorID = {UID}"
+        cur.execute(query)
+        mysql.connection.commit()
+        isAdmin = cur.fetchone()
+
+        # GET THE CREATOR USERNAME
+        query = f"SELECT Username FROM User, Party WHERE CreatorID = UserID AND groupID = {identifier};"
+        cur.execute(query)
+        mysql.connection.commit()
+        creatorName = cur.fetchone()[0]
+
+        # GET ALL THE MEMBERS USERNAMES
+        query = f"SELECT Username, U.UserID FROM User U " \
+                f"INNER JOIN GroupMembers G ON U.UserID = G.memberID WHERE G.groupID = {identifier};"
+        cur.execute(query)
+        mysql.connection.commit()
+        members = cur.fetchall()
+
         cur.close()
-        return render_template('group.html', list=results, isMember=int(total[0]))
+        return render_template('group.html', list=results, isMember=int(total[0]), name=Name, creator=creatorName, members=members, user=UID, admin=isAdmin, sales=sales)
         # DISPLAY THE GROUP LIST
     elif request.method == "POST":
         # CHECK WHAT KIND OF BUTTON
 
         if request.form.get("JoinButton"):
             if session['useList'] is not None:
+
                 print("joining group. ")
                 cur = mysql.connection.cursor()
                 identifier = session.get('groupID', None)
@@ -129,6 +166,7 @@ def group():
                         f"VALUES('{identifier}', '{UID}', '{listNumber}');"
                 cur.execute(query)
                 mysql.connection.commit()
+
                 query = f"UPDATE Party SET numberOfMembers= numberOfMembers+1 WHERE groupID={identifier};"
                 cur.execute(query)
                 mysql.connection.commit()
@@ -140,17 +178,77 @@ def group():
 
             print("leaving group")
             cur = mysql.connection.cursor()
+
             identifier = session.get('groupID', None)
             query = f"DELETE FROM `ShoppingApplication`.`GroupMembers` WHERE memberID = {UID};"
             cur.execute(query)
             mysql.connection.commit()
+
             query = f"UPDATE Party SET numberOfMembers= numberOfMembers-1 WHERE groupID={identifier};"
             cur.execute(query)
             mysql.connection.commit()
             cur.close()
+
             return redirect(url_for('groups'))
+
+        elif request.form.get('rateButton'):
+            session['rateUser'] = request.form.get('rateButton')
+            session['rateName'] = request.form.get('memberName')
+            return redirect(url_for('rate'))
         return render_template('group.html')
     return render_template('group.html')
+
+
+@app.route("/rate/", methods=['GET', 'POST'])
+def rate():
+    UID = session['UserID']
+    rated = False
+    name = session['rateName']
+    ratee = session['rateUser']
+
+    # DETERMINE IF UPVOTE OR DOWNVOTE
+    if request.form.get('upvote'):
+        upvote = 1
+        downvote = 0
+
+        rated = True
+    elif request.form.get('downvote'):
+        upvote = 0
+        downvote = 1
+        rated = True
+
+    # IF VOTED THEN INSERT
+    if rated:
+        cur = mysql.connection.cursor()
+
+        query = f"SELECT COUNT(*) FROM Rates WHERE raterID = {UID} AND rateeID = {ratee};"
+        cur.execute(query)
+        mysql.connection.commit()
+        isRated = cur.fetchone()[0]
+        print(isRated)
+
+        # IF A RATING ALREADY EXISTS DELETE BEFORE INSERTING
+        if isRated == 1:
+            query = f"DELETE FROM Rates WHERE raterID = {UID} AND rateeID = {ratee};"
+            cur.execute(query)
+            mysql.connection.commit()
+
+        #INSERT NEW RATING
+
+        query = f"INSERT INTO `ShoppingApplication`.`Rates`(raterID, rateeID, Upvote, Downvote) VALUES ('{UID}', '{ratee}', '{upvote}', '{downvote}');"
+        cur.execute(query)
+        mysql.connection.commit()
+
+        #UPDATE CUSTOMER RATING
+        query = f"UPDATE Customer SET " \
+                f"CustomerRating= ((SELECT COUNT(*) FROM Rates " \
+                f"WHERE rateeID= {ratee} AND Upvote=1)/(SELECT COUNT(*) FROM Rates " \
+                f"WHERE rateeID= {ratee})*5)WHERE UserID={ratee};"
+        cur.execute(query)
+        mysql.connection.commit()
+        cur.close()
+        return redirect(url_for('group'))
+    return render_template('rate.html', name=name)
 
 
 @app.route("/signup/", methods=['GET', 'POST'])
@@ -412,6 +510,7 @@ def groceryinfo():
 
     return render_template('groceryinfo.html')
 
+
 @app.route("/editgrocery/", methods=['GET', 'POST'])
 def editgrocery():
     loggedin = session['logged_in']
@@ -527,6 +626,7 @@ def editgrocery():
 
     return render_template('editgroceryinfo.html',Username=Username, Password=Password, Email=Email,
                                StName=StName, UnitNumber=UnitNumber, StoreName=StoreName)
+
 
 @app.route("/createsale/", methods=['GET', 'POST'])
 def createsale():

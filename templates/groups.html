@@ -4,7 +4,7 @@
     <!-- Posts are created using a for loop iterating over the posts variable
     in flaskblog.py -->
 
-    <h3>
+    <h3 align="center">
             Groups:
     </h3>
 
@@ -22,7 +22,10 @@
         <li class="groupList w-25 list-group-item blueItems">
             <pre>
                 <div class="listButtonInfo"><h6>Group Name: {{lists[0]}}</h6><h6>Average member rating: {{lists[2]}}</h6></div>
-                <form action="" method="post"><button class="listButton" name="listButton" value={{lists[1]}}>View Group</button></form>
+                <form action="" method="post">
+                    <button class="listButton" name="listButton" value={{lists[1]}}>View Group</button>
+                    <input type="hidden" value="{{lists[0]}}" name="groupName">
+                </form>
             </pre>
         </li>
     {% endfor %}
