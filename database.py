@@ -19,6 +19,26 @@ class Database():
         conn = mysql.connector.connect(**config)
         return conn
 
+    # Triggers.
+    def createTriggerCustomerRating1(self):
+        conn = self.createConnection(self)
+        c = conn.cursor()
+        query = f"CREATE TRIGGER CustomerRating1 " \
+                f"AFTER INSERT ON Rates " \
+                f"FOR EACH ROW " \
+                f"UPDATE Customer " \
+                f"SET CustomerRating = ((SELECT COUNT(*) " \
+                f"FROM Rates "  \
+                f"WHERE rateeID = NEW.rateeID AND Upvote=1)/(SELECT COUNT(*) "  \
+				f"FROM Rates "  \
+				f"WHERE rateeID=NEW.rateeID)*5) "  \
+                f"WHERE UserID=NEW.rateeID"
+        c.execute(query)
+        conn.commit()
+        c.close()
+        conn.close()
+
+    # Insertions.
     def insertUser(self, userID, Username, Password, Email, StreetName, UnitNumber):
         conn = self.createConnection(self)
         c = conn.cursor()

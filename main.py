@@ -13,7 +13,7 @@ import random
 app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'Root_default1996'
+app.config['MYSQL_PASSWORD'] = 'pokemon00'
 app.config['MYSQL_DB'] = 'ShoppingApplication'
 app.config['SECRET_KEY'] = 'KECRET_SEY'
 
@@ -238,14 +238,6 @@ def rate():
         #INSERT NEW RATING
 
         query = f"INSERT INTO `ShoppingApplication`.`Rates`(raterID, rateeID, Upvote, Downvote) VALUES ('{UID}', '{ratee}', '{upvote}', '{downvote}');"
-        cur.execute(query)
-        mysql.connection.commit()
-
-        #UPDATE CUSTOMER RATING
-        query = f"UPDATE Customer SET " \
-                f"CustomerRating= ((SELECT COUNT(*) FROM Rates " \
-                f"WHERE rateeID= {ratee} AND Upvote=1)/(SELECT COUNT(*) FROM Rates " \
-                f"WHERE rateeID= {ratee})*5)WHERE UserID={ratee};"
         cur.execute(query)
         mysql.connection.commit()
         cur.close()
