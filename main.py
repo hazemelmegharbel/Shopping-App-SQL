@@ -13,7 +13,7 @@ import random
 app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'pokemon00'
+app.config['MYSQL_PASSWORD'] = 'Root_default1996'
 app.config['MYSQL_DB'] = 'ShoppingApplication'
 app.config['SECRET_KEY'] = 'KECRET_SEY'
 
