@@ -240,14 +240,6 @@ def rate():
         query = f"INSERT INTO `ShoppingApplication`.`Rates`(raterID, rateeID, Upvote, Downvote) VALUES ('{UID}', '{ratee}', '{upvote}', '{downvote}');"
         cur.execute(query)
         mysql.connection.commit()
-
-        #UPDATE CUSTOMER RATING
-        query = f"UPDATE Customer SET " \
-                f"CustomerRating= ((SELECT COUNT(*) FROM Rates " \
-                f"WHERE rateeID= {ratee} AND Upvote=1)/(SELECT COUNT(*) FROM Rates " \
-                f"WHERE rateeID= {ratee})*5)WHERE UserID={ratee};"
-        cur.execute(query)
-        mysql.connection.commit()
         cur.close()
         return redirect(url_for('group'))
     return render_template('rate.html', name=name)

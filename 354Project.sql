@@ -45,6 +45,7 @@ CREATE TABLE `ShoppingApplication`.`Rates`(
 `Upvote` INT NULL,
 `Downvote` INT NULL,
 CHECK (`raterID` <> `rateeID`),
+ChECK (`UpVote` <> `Downvote`),
 FOREIGN KEY (`raterID`) REFERENCES Customer(`UserID`),
 FOREIGN KEY (`rateeID`) REFERENCES Customer(`UserID`),
 PRIMARY KEY (`raterID`, `rateeID`));
