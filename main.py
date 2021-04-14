@@ -22,7 +22,7 @@ mysql = MySQL(app)
 
 session['logged_in'] = False
 session['useList'] = None
-
+session['isCust'] = False
 
 
 @app.route("/")
@@ -32,17 +32,23 @@ def home():
 
 @app.route("/groups/", methods=['GET', 'POST'])
 def groups():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS GROCERY USER, REDIRECT
+    if not customer:
+        return redirect(url_for('groceryinfo'))
+
     UID = session['UserID']
     listNumber = session['useList']
-    if request.method == "GET":
-        cur = mysql.connection.cursor()
-        query = f"SELECT * FROM PARTY"
-        cur.execute(query)
-        mysql.connection.commit()
-        results = cur.fetchall()
-        cur.close()
-        print(results)
 
+    if request.method == "GET":
+
+        # GET THE LIST OF GROUPS
         cur = mysql.connection.cursor()
         query = f"SELECT P.groupName, G.groupID, AVG(CustomerRating)" \
                 f" FROM Customer C, GroupMembers G" \
@@ -53,28 +59,36 @@ def groups():
         mysql.connection.commit()
         results = cur.fetchall()
         cur.close()
-        print(results)
+
         return render_template('groups.html', lists=results)
+
     elif request.method == "POST":
         if request.form.get('listButton'):
+
+            # USER CLICKED ON A SPECIFIC GROUP. SEND TO SPECIFIC GROUP PAGE
             data = request.form.get('listButton')
             session['groupID'] = data
             session['groupName'] = request.form.get('groupName')
-            print(data)
             return redirect(url_for('group'))
+
         elif request.form.get('addButton'):
+
+            # CREATING NEW GROUP
             groupName = request.form.get('groupNameID')
+
+            # CREATE NEW UNIQUE ID
             cur = mysql.connection.cursor()
             query = f"SELECT groupID FROM Party"
             cur.execute(query)
             mysql.connection.commit()
             results = cur.fetchall()
             cur.close()
-            print(results)
+
             groupID = max(results)[0] + 1
-            print(groupID)
+
             if groupName:
-                print(groupName)
+
+                # IF INPUT IS VALID INPUT
                 cur = mysql.connection.cursor()
                 query = f"INSERT INTO `ShoppingApplication`.`Party`" \
                         f"(groupID, creatorID, groupName, numberOfMembers, shoppingDate) " \
@@ -85,19 +99,37 @@ def groups():
                 cur.execute(query)
                 mysql.connection.commit()
                 cur.close()
+
+            else:
+                flash(message='Input a Group Name', category='error')
             return redirect(url_for('groups'))
     return render_template('groups.html')
 
 
 @app.route("/groups/group", methods=['GET', 'POST'])
 def group():
+
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS GROCERY USER, REDIRECT
+    if not customer:
+        return redirect(url_for('groceryinfo'))
+
     UID = session['UserID']
     listNumber = session['useList']
     identifier = session['groupID']
     Name = session['groupName']
-    print(listNumber, identifier)
+
+    # CHECK IF USER HAS ACCESSED PAGE CORRECTLY
+    if not identifier:
+        return redirect(url_for('groups'))
+
     if request.method == "GET":
-        print("loading page")
 
         cur = mysql.connection.cursor()
 
@@ -138,6 +170,7 @@ def group():
         mysql.connection.commit()
         isAdmin = cur.fetchone()
 
+
         # GET THE CREATOR USERNAME
         query = f"SELECT Username FROM User, Party WHERE CreatorID = UserID AND groupID = {identifier};"
         cur.execute(query)
@@ -152,46 +185,73 @@ def group():
         members = cur.fetchall()
 
         cur.close()
-        return render_template('group.html', list=results, isMember=int(total[0]), name=Name, creator=creatorName, members=members, user=UID, admin=isAdmin, sales=sales)
-        # DISPLAY THE GROUP LIST
+        return render_template('group.html', list=results, isMember=int(total[0]), name=Name, creator=creatorName, members=members, user=UID, admin=isAdmin[0], sales=sales)
     elif request.method == "POST":
-        # CHECK WHAT KIND OF BUTTON
 
         if request.form.get("JoinButton"):
+            #CHECK FOR ACTIVE LIST
             if session['useList'] is not None:
 
-                print("joining group. ")
+                # ADD THE USER TO THE GROUP
                 cur = mysql.connection.cursor()
                 identifier = session.get('groupID', None)
-
                 query = f"INSERT INTO `ShoppingApplication`.`GroupMembers`(groupID, memberID, UsesList) " \
                         f"VALUES('{identifier}', '{UID}', '{listNumber}');"
                 cur.execute(query)
                 mysql.connection.commit()
 
+                # UPDATE PARTY
                 query = f"UPDATE Party SET numberOfMembers= numberOfMembers+1 WHERE groupID={identifier};"
                 cur.execute(query)
                 mysql.connection.commit()
                 cur.close()
             else:
                 flash(message='Must have an active list to join groups', category='error')
+
             return redirect(url_for('group'))
         elif request.form.get("LeaveButton"):
 
-            print("leaving group")
             cur = mysql.connection.cursor()
 
+            # REMOVE USER FROM GROUP
             identifier = session.get('groupID', None)
-            query = f"DELETE FROM `ShoppingApplication`.`GroupMembers` WHERE memberID = {UID};"
+            query = f"DELETE FROM `ShoppingApplication`.`GroupMembers` " \
+                    f"WHERE memberID = {UID} AND groupID = {identifier};"
             cur.execute(query)
             mysql.connection.commit()
 
+            # UPDATE PARTY SIZE
             query = f"UPDATE Party SET numberOfMembers= numberOfMembers-1 WHERE groupID={identifier};"
             cur.execute(query)
             mysql.connection.commit()
             cur.close()
 
             return redirect(url_for('groups'))
+
+        elif request.form.get("DeleteButton"):
+            # ADMIN DISBANDING GROUP
+
+            cur = mysql.connection.cursor()
+
+            query = f"DELETE FROM `ShoppingApplication`.`PARTY` WHERE creatorID={UID} AND groupID={identifier}"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('groups'))
+
+        elif request.form.get("kickButton"):
+            # ADMIN KICK USER
+
+            id = request.form.get("kickButton")
+            cur = mysql.connection.cursor()
+
+            query = f"DELETE FROM `ShoppingApplication`.`GroupMembers` " \
+                    f"WHERE memberID = {id} AND groupID = {identifier};"
+            cur.execute(query)
+            mysql.connection.commit()
+            cur.close()
+
+            return redirect(url_for('group'))
 
         elif request.form.get('rateButton'):
             session['rateUser'] = request.form.get('rateButton')
@@ -203,10 +263,24 @@ def group():
 
 @app.route("/rate/", methods=['GET', 'POST'])
 def rate():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS GROCERY USER, REDIRECT
+    if not customer:
+        return redirect(url_for('groceryinfo'))
+
     UID = session['UserID']
     rated = False
     name = session['rateName']
     ratee = session['rateUser']
+
+    if name is None:
+        return redirect(url_for('groups'))
 
     # DETERMINE IF UPVOTE OR DOWNVOTE
     if request.form.get('upvote'):
@@ -449,6 +523,7 @@ def login():
                 recent = cur.fetchone()
                 cur.close()
 
+                session['isCust'] = True
                 session['FName'] = customer[1] #Customers first name
                 session['LName'] = customer[2] #Customers second name
                 if recent is not None:
@@ -465,6 +540,7 @@ def login():
                 cur.close()
                 print("grocery")
                 session['StoreName'] = grocery[1]
+                session['isCust'] = False
                 return redirect(url_for('groceryinfo'))
 
             #If user is not a customer then direct them to customer sign up page
@@ -479,6 +555,17 @@ def login():
 
 @app.route("/groceryinfo/", methods=['GET', 'POST'])
 def groceryinfo():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS CUSTOMER USER, REDIRECT
+    if customer:
+        return redirect(url_for('userinfo'))
+
     if request.method == 'GET':
 
         loggedin = session['logged_in']
@@ -508,10 +595,16 @@ def groceryinfo():
 
 @app.route("/editgrocery/", methods=['GET', 'POST'])
 def editgrocery():
+    # CHECK IF USER IS LOGGED IN
     loggedin = session['logged_in']
-
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
     if not loggedin:
-        redirect(url_for('login'))
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS CUSTOMER, REDIRECT
+    if customer:
+        return redirect(url_for('userinfo'))
 
     if request.method == 'GET':
 
@@ -544,7 +637,7 @@ def editgrocery():
         UnitNumber = request.form.get('Unit Number')
 
 
-        #CUSTOMER UPDATE data
+        #GROCERY UPDATE data
         StoreName = request.form.get('Store Name')
 
         # INPUT CONDITIONS
@@ -575,7 +668,7 @@ def editgrocery():
             mysql.connection.commit()
             cur.close()
 
-            #UPDATE CUSTOMER QUERY
+            #UPDATE GROCERY QUERY
             cur = mysql.connection.cursor()
             query = f"UPDATE GroceryStore " \
                     f"SET StoreName = '{StoreName}' " \
@@ -625,10 +718,16 @@ def editgrocery():
 
 @app.route("/createsale/", methods=['GET', 'POST'])
 def createsale():
+    # CHECK IF USER IS LOGGED IN
     loggedin = session['logged_in']
-
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
     if not loggedin:
-        redirect(url_for('login'))
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS CUSTOMER, REDIRECT
+    if customer:
+        return redirect(url_for('userinfo'))
 
     UID = session['UserID']
 
@@ -645,6 +744,7 @@ def createsale():
 
 
             #CHECK IF USER EXIST
+            queryCheck = f"SELECT * FROM SalePromotion WHERE SaleItem = '{saleItem}' "
             queryCheck = f"SELECT * FROM SalePromotion WHERE SaleItem = '{saleItem}' "
             cur.execute(queryCheck)
             mysql.connection.commit()
@@ -683,6 +783,17 @@ def createsale():
 
 @app.route("/viewsales/", methods=['GET', 'POST'])
 def viewsales():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS CUSTOMER, REDIRECT
+    if customer:
+        return redirect(url_for('userinfo'))
+
     UID = session['UserID']
     if request.method == "GET":
         cur = mysql.connection.cursor()
@@ -692,7 +803,6 @@ def viewsales():
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
-        print(results)
         cur.close()
         return render_template('viewsales.html', list=results)
 
@@ -701,9 +811,22 @@ def viewsales():
 
 @app.route("/viewlocallists/", methods=['GET', 'POST'])
 def viewlocallists():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS CUSTOMER, REDIRECT
+    if customer:
+        return redirect(url_for('userinfo'))
 
     if request.method == "GET":
+
         cur = mysql.connection.cursor()
+
+        # RUN SCOTTS SPICY DIVISION QUERY TO GET ITEMS IN ALL GROUPS
         query = f"SELECT DISTINCT ItemName FROM ListItem AS L1 " \
         f"WHERE NOT EXISTS " \
         f"(SELECT DISTINCT groupID FROM GroupMembers " \
@@ -713,7 +836,6 @@ def viewlocallists():
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
-        print(results)
         cur.close()
         return render_template('viewcustomerlists.html', list=results)
     return render_template('viewcustomerlists.html')
@@ -721,6 +843,12 @@ def viewlocallists():
 
 @app.route("/logout/", methods=['GET', 'POST'])
 def logout():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
 
     if request.method == "GET":
         return render_template('logout.html')
@@ -744,7 +872,7 @@ def logout():
 
     return render_template('logout.html')
 
-
+'''
 @app.route("/custcreate/", methods=['GET', 'POST'])
 def custcreate():
     if request.method == 'GET':
@@ -781,16 +909,23 @@ def custcreate():
             return redirect(url_for('home'))
 
     return render_template('custcreate.html')
+'''
 
 
 @app.route("/userinfo/", methods=['GET', 'POST'])
 def userinfo():
     if request.method == 'GET':
 
+        # CHECK IF USER IS LOGGED IN
         loggedin = session['logged_in']
-
+        customer = session['isCust']
+        # REDIRECT TO LOG IN PAGE
         if not loggedin:
-            redirect(url_for('login'))
+            return redirect(url_for('login'))
+
+        # LOGGED ON AS GROCERY, REDIRECT
+        if not customer:
+            return redirect(url_for('groceryinfo'))
 
         UID = session['UserID']
 
@@ -819,10 +954,14 @@ def edituserinfo():
 
         # CHECK IF USER IS LOGGED IN
         loggedin = session['logged_in']
-
+        customer = session['isCust']
         # REDIRECT TO LOG IN PAGE
         if not loggedin:
-            redirect(url_for('login'))
+            return redirect(url_for('login'))
+
+        # LOGGED ON AS GROCERY, REDIRECT
+        if not customer:
+            return redirect(url_for('groceryinfo'))
 
         Username = session['Username']
         Password = session['Password']
@@ -933,33 +1072,49 @@ def edituserinfo():
 
 @app.route("/list/", methods=['GET', 'POST'])
 def list():
+
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS GROCERY USER, REDIRECT
+    if not customer:
+        return redirect(url_for('groceryinfo'))
+
     UID = session['UserID']
     if request.method == "GET":
+
+        # SELECT ALL THE LISTS FOR A USER
         cur = mysql.connection.cursor()
         query = f"SELECT Name, CreationDate, listNumber FROM CustomerList WHERE CustomerID = '{UID}'"
         cur.execute(query)
         mysql.connection.commit()
         results = cur.fetchall()
-        print(results)
         cur.close()
+
         return render_template('viewlists.html', lists=results)
 
     elif request.method == "POST":
         if request.form.get('listButton'):
+
+            # USER CLICKED SPECIFIC LIST
             data = request.form.get('listButton')
             parsed = data.split()
             session['index'] = parsed[0]
             session['name'] = parsed[1]
             return redirect(url_for('items'))
+
         elif request.form.get('deleteButton'):
 
-            # ADD FUNCTIONALITY TO PREVENT DELETING A BOUND LIST
             data = request.form.get('deleteButton')
             parsed = data.split()
             session['index'] = parsed[0]
-            print(parsed[0])
             cur = mysql.connection.cursor()
 
+            # COUNTS THE NUMBER OF REFERENCES TO THE DELETE LIST
             query = f"SELECT COUNT(*), P.groupName FROM GroupMembers G INNER JOIN " \
                     f"Party P ON P.groupID = G.groupID WHERE memberID={UID} AND UsesList={parsed[0]};"
 
@@ -968,6 +1123,8 @@ def list():
             info = cur.fetchone()
             listUsed = info[0]
             inGroup = info[1]
+
+            # IF THERE ARE NO REFERENCES TO THE DELETE LIST
             if listUsed == 0:
                 query = f"DELETE FROM CustomerList WHERE CustomerID={UID} AND ListNumber={parsed[0]}"
                 cur.execute(query)
@@ -987,7 +1144,7 @@ def list():
                     session['useList'] = None
 
             else:
-                display = "Leave group {}".format(inGroup)
+                display = "List currently active in group {}. Leave before deleting".format(inGroup)
                 flash(message=display, category='error')
             cur.close()
 
@@ -997,24 +1154,37 @@ def list():
 
 @app.route("/create/", methods=['GET', 'POST'])
 def create():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS GROCERY USER, REDIRECT
+    if not customer:
+        return redirect(url_for('groceryinfo'))
+
     UID = session['UserID']
+
+    # QUERY THE LIST NUMBERS TO CREATE A NON DUPLICATE
     cur = mysql.connection.cursor()
     query = f"SELECT ListNumber From CustomerList WHERE CustomerID = {UID}"
     cur.execute(query)
     mysql.connection.commit()
     results = cur.fetchone()
-    print(results)
     cur.close()
+
     if request.method == "POST":
         data = request.form.get('nameID')
         dateInsert = datetime.today().strftime("%Y-%m-%d")
-        print(dateInsert)
+
+        # IF THE USER HAS NO LISTS
         if results is None:
             insertNumber = 1
         else:
             insertNumber = max(results) + 1
         if data:
-            print(data, dateInsert, "printing...")
             cur = mysql.connection.cursor()
             query = f"INSERT INTO `ShoppingApplication`.`CustomerList`(CustomerID, ListNumber, Name, CreationDate) " \
                     f"VALUES ('{UID}', {insertNumber}, '{data}', '{dateInsert}');"
@@ -1022,7 +1192,7 @@ def create():
             mysql.connection.commit()
             cur.close()
 
-            #Set the list to the current shopping list
+            # Set the list to the current shopping list
             session['useList'] = insertNumber
             session['name'] = data
             return redirect(url_for('items'))
@@ -1032,12 +1202,29 @@ def create():
 
 @app.route("/list/items", methods=['GET', 'POST'])
 def items():
+    # CHECK IF USER IS LOGGED IN
+    loggedin = session['logged_in']
+    customer = session['isCust']
+    # REDIRECT TO LOG IN PAGE
+    if not loggedin:
+        return redirect(url_for('login'))
+
+    # LOGGED ON AS GROCERY USER, REDIRECT
+    if not customer:
+        return redirect(url_for('groceryinfo'))
+
+    index = session.get('index', None)
+    name = session.get('name', None)
+
+    if index is None or name is None:
+        return redirect(url_for('list'))
+
     UID = session['UserID']
     if request.method == "GET":
-        index = session.get('index', None)
-        name = session.get('name', None)
-        print(index)
+
         cur = mysql.connection.cursor()
+
+        # SELECT ALL THE ITEMS IN A LIST
         query = f"SELECT L.ItemName, L.Quantity " \
                 f"FROM ListItem L " \
                 f"WHERE customerID = '{UID}' AND listNumber = '{index}'"
@@ -1045,46 +1232,48 @@ def items():
         mysql.connection.commit()
         results = cur.fetchall()
         cur.close()
+
         return render_template('listitems.html', list=results, Name=name)
     elif request.method == "POST":
-        index = session.get('index', None)
+
         quantity = request.form.get("quantity")
-        name = request.form.get("itemName")
+
         if request.form.get("quantity"):
-            print(quantity)
-            print(index)
-            print(name)
+            # EDITING THE QUANTITY OF AN ITEM
+
             cur = mysql.connection.cursor()
             query = f"UPDATE ListItem SET Quantity = {quantity} " \
                     f"WHERE CustomerID = {UID} AND ListNumber = {index} AND ItemName LIKE'%{name}%';"
             cur.execute(query)
             mysql.connection.commit()
             cur.close()
+
+            # SET THE ACTIVE LIST TO THE MOST RECENT EDITED
             session['useList'] = index
+
             return redirect(url_for('items'))
+
         elif request.form.get("deleteButton"):
-            print("DELETE")
+            # DELETE THE ITEM FROM THE LIST
             itemName = request.form.get("deleteButton")
-            print(itemName)
+
             cur = mysql.connection.cursor()
             query = f"DELETE FROM ListItem WHERE ItemName LIKE '%{itemName}%' AND CustomerID={UID} AND ListNumber={index}"
             cur.execute(query)
             mysql.connection.commit()
             cur.close()
+
             return redirect(url_for('items'))
         elif request.form.get("addButton"):
-            print("ADDING")
+
+            # ADD NEW ITEM TO THE LIST
             newName = request.form.get("itemNameID")
             newQuantity = request.form.get("quantityID")
-            print(newName)
             if not newName:
-                print("none")
                 flash(message='Add an item name', category='error')
             elif not newQuantity.isdigit():
-                print("digit")
                 flash(message='Quantity must be an integer', category='error')
             else:
-                print("else")
                 cur = mysql.connection.cursor()
                 query = f"INSERT INTO `ShoppingApplication`.`ListItem` " \
                         f"(`ItemName`, `ListNumber`, `CustomerID`, `Quantity`) " \

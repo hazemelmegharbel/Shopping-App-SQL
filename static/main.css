@@ -38,7 +38,13 @@
 .rateButton{
     position: absolute;
     right: 10px;
-    top: 10px
+    top: 5px
+}
+
+.kickButton{
+    position: absolute;
+    right: 10px;
+    top: 40px
 }
 
 .flex-container{

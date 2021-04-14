@@ -24,8 +24,10 @@
                                 <form method="post">
                                     <button name="rateButton" class="rateButton" value="{{Members[1]}}">Rate</button>
                                     <input type="hidden" value="{{Members[0]}}" name="memberName">
+                                    {% if admin == 1 %}
+                                    <button name="kickButton" class="kickButton" value="{{Members[1]}}">Kick</button>
+                                    {% endif %}
                                 </form>
-                            <div>Rating: </div>
                             {% endif %}
                         </li>
                     </div>
@@ -76,8 +78,10 @@
     </div>
     <form action="" method="post">
         <div align="center">
-        {% if isMember == 0 %}
+        {% if isMember == 0 and admin == 0 %}
             <button class="membershipButton" name="JoinButton" value="JoinButton" align="center">Join Group</button>
+        {% elif admin == 1 %}
+            <button class="membershipButton" name="DeleteButton" value="DeleteButton" align="center">Disband Group</button>
         {% else %}
             <button class="membershipButton" name="LeaveButton" value="LeaveButton" align="center">Leave Group</button>
         {% endif %}
