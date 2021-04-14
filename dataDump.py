@@ -110,6 +110,7 @@ db.insertListItem('Hand Sanitizer', '2', '100011111', '2')
 db.insertListItem('Hand Sanitizer', '4', '666666666', '3')
 #can't get 200g of NUTS lmao
 
+'''
 #insertSaleShownToGroup(groupID, saleItem, groceryID)
 db.insertSaleShownToGroup('1000001', 'Bananas', '100111111')
 db.insertSaleShownToGroup('1000002', 'Hand Sanitizer', '100111111')
@@ -117,5 +118,5 @@ db.insertSaleShownToGroup('1000022', 'Instant Noodles', '100001111')
 db.insertSaleShownToGroup('1000032', 'Instant Noodles', '100001111')
 db.insertSaleShownToGroup('1000032', 'Toilet Paper', '100000011')
 db.insertSaleShownToGroup('1000044', 'Apples', '111111111')
-
+'''
 print('Sent to DB!\n')
