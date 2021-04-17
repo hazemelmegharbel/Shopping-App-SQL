@@ -1,5 +1,5 @@
 import os
-from datetime import date, datetime
+from datetime import datetime
 from flask import Flask, request, session, url_for, flash
 from flask import render_template
 
@@ -165,18 +165,21 @@ def group():
         total = cur.fetchone()
 
         # CHECK IF THE USER IS THE CREATOR
-        query = f"SELECT COUNT(*) FROM Party WHERE GroupID = {identifier} AND creatorID = {UID}"
+        query = f"SELECT COUNT(*), shoppingDate FROM Party WHERE GroupID = {identifier} AND creatorID = {UID}"
         cur.execute(query)
         mysql.connection.commit()
-        isAdmin = cur.fetchone()
+        result = cur.fetchone()
+        isAdmin = result[0]
+
 
 
         # GET THE CREATOR USERNAME
-        query = f"SELECT Username FROM User, Party WHERE CreatorID = UserID AND groupID = {identifier};"
+        query = f"SELECT Username, shoppingDate FROM User, Party WHERE CreatorID = UserID AND groupID = {identifier};"
         cur.execute(query)
         mysql.connection.commit()
-        creatorName = cur.fetchone()[0]
-
+        result = cur.fetchone()
+        creatorName = result[0]
+        shopdate = result[1]
         # GET ALL THE MEMBERS USERNAMES
         query = f"SELECT Username, U.UserID FROM User U " \
                 f"INNER JOIN GroupMembers G ON U.UserID = G.memberID WHERE G.groupID = {identifier};"
@@ -185,7 +188,8 @@ def group():
         members = cur.fetchall()
 
         cur.close()
-        return render_template('group.html', list=results, isMember=int(total[0]), name=Name, creator=creatorName, members=members, user=UID, admin=isAdmin[0], sales=sales)
+        return render_template('group.html', list=results, isMember=int(total[0]), name=Name,
+                               creator=creatorName, members=members, user=UID, admin=isAdmin, sales=sales, date=shopdate)
     elif request.method == "POST":
 
         if request.form.get("JoinButton"):
@@ -251,6 +255,22 @@ def group():
             mysql.connection.commit()
             cur.close()
 
+            return redirect(url_for('group'))
+
+        elif request.form.get("ShoppingButton"):
+            date = request.form.get("ShoppingDate")
+
+            convertedDate = datetime.strptime(date, '%Y-%m-%d').date()
+            if convertedDate >= datetime.today().date():
+                cur = mysql.connection.cursor()
+
+                #SET THE SHOPPING DATE
+                query = f"UPDATE Party SET shoppingDate = '{date}' WHERE groupID = {identifier};"
+                cur.execute(query)
+                mysql.connection.commit()
+                cur.close()
+            else:
+                flash(message="Enter a valid date", category='error')
             return redirect(url_for('group'))
 
         elif request.form.get('rateButton'):
@@ -742,6 +762,7 @@ def createsale():
             endDate = request.form.get('EndDate')
             discount = request.form.get('Discount')
 
+            convertedStart = datetime.strptime(startDate, '%Y-%m-%d').date()
 
             #CHECK IF USER EXIST
             queryCheck = f"SELECT * FROM SalePromotion WHERE SaleItem = '{saleItem}' "
@@ -770,6 +791,9 @@ def createsale():
 
             elif startDate > endDate:
                 flash("Sale starts after the sale ends", category='error')
+
+            elif convertedStart < datetime.today().date():
+                flash(message="Invalid start date", category='error')
             else:
                 cur = mysql.connection.cursor()
                 query = f"INSERT INTO `ShoppingApplication`.`SalePromotion`" \
@@ -1133,7 +1157,9 @@ def list():
                 # SET active list to most recent created
                 cur = mysql.connection.cursor()
                 query = f"SELECT ListNumber FROM CustomerList " \
-                        f"WHERE CustomerID = '{UID}' GROUP BY CustomerID HAVING MAX(CreationDate);"
+                        f"WHERE CustomerID = '{UID}' AND " \
+                        f"CreationDate = (SELECT MAX(CreationDate) " \
+                        f"FROM CustomerList WHERE CustomerID = '{UID}');"
                 cur.execute(query)
                 mysql.connection.commit()
                 recent = cur.fetchone()

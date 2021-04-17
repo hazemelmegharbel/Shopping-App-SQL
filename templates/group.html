@@ -10,6 +10,20 @@
     <h4 align="center">
         Creator: {{creator}}
     </h4>
+
+    <div align="center">
+        {% if admin == 1 %}
+            <div>
+            <form method="post">
+                <input name="ShoppingDate" value="{{date}}" type="date">
+                <button name="ShoppingButton" value="1">Submit</button>
+            </form>
+            </div>
+        {% else %}
+            <h4>{{date}}</h4>
+        {% endif %}
+    </div>
+
     <div class="flex-container">
         <div class="flex-child">
             {% if isMember != 0 %}
